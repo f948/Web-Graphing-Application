@@ -2,7 +2,7 @@
 
 Description-A desmos like application that lets users graph multiple types of functions on a the 2D coordinate plane.Users can also scale the graph and set the coordinates at the 
 center to zoom in on different parts of the graph. 
-NOTE: The number you type into the "Scale Graph" box becomes half the length of the square grid.
+NOTE: The number you type into the "Scale graph" box becomes half the length of the square grid.
 
 # Required
 
