@@ -1,0 +1,1119 @@
+<html>
+	<head>
+		<style>
+			canvas{
+				   border  : 1px solid black;
+				  }
+		</style>
+	 
+	 <canvas id="canvas" width="600" height = "600" onmousemove="showCoordinates(event)"></canvas>
+	 <br>
+	 Coordinates 
+	 <input type="text" style="width:250px;height:25px" id="coordinates" readonly>
+	 <br>
+	 Choose function type 
+	 <select id="function">
+		<option value="polynomial">Polynomial</option>
+		<option value="rational">Rational</option>
+		<option value="exponential">Exponential</option>
+		<option value="log">Log</option>
+		<option value="sin">Sin</option>
+		<option value="cos">Cos</option>
+		<option value="tan">Tan</option>
+		<option value="csc">Csc</option>
+		<option value="sec">Sec</option>
+		<option value="cot">Cot</option>
+		<option value="absolute value">Absolute Value</option>
+		<option value="square root">Square Root</option>
+		<option value="ellipse">Ellipse</option>
+		<option value="derivative polynomial">Derivative Polynomial</option>
+		<option value="derivative rational">Derivative Rational</option>
+		<option value="derivative exponential">Derivative Exponential</option>
+		<option value="derivative log">Derivative Log</option>
+	    <option value="derivative sin">Derivative Sin</option>
+		<option value="derivative cos">Derivative Cos</option>
+		<option value="derivative square root">Derivative Square Root</option>
+		<option value="integral polynomial">Integral Polynomial</option>
+		<option value="integral rational">Integral Rational</option>
+		<option value="integral sin">Integral Sin</option>
+		<option value="integral cos">Integral Cos</option>
+		<option value="integral exponential">Integral Exponential</option>
+		<option value="integral log">Integral Log</option>
+		<option value="integral square root">Integral Square Root</option>
+	</select>
+	<br>
+	 Scale graph
+	 <input type="number" id="scale" value="300">
+	 <br>
+	 <input type="button" value ="Apply Scale"onclick="applyScale()">
+	 <br>
+	Choose color for the graph
+	 <input type="color" id="color" value="#000000">
+	 <br>
+	<input type="button" value ="Graph"onclick="graph()">
+	<input type="button" value ="Restart"onclick="location.reload()">
+	</head>
+	<body>
+		<script>
+		
+			// global variables 
+			var x,y;
+			var scaleFactor=1;
+			var i,j;
+			var innerPoints=new Array();
+		
+			
+			
+			// global constants 
+			const canvas = document.getElementById("canvas");
+			const context = canvas.getContext('2d');
+			const colorPicker = document.getElementById("color");
+			const selectBox = document.getElementById("function");
+			const scaleSelectBox = document.getElementById("scale");
+			const coordinatesBox = document.getElementById("coordinates");
+			const rect = canvas.getBoundingClientRect();
+			
+			drawGridLines();
+			
+			// draw grid lines 
+			function drawGridLines(){
+				
+				context.strokeStyle = "black";
+				
+				for(x=0;x<=600;x+=50){
+				
+					if(x == 300){
+						context.lineWidth = 5;
+					}
+				
+					else{
+						context.lineWidth = 1;
+					}
+				
+					context.beginPath();
+					context.moveTo(x,0);
+					context.lineTo(x,600);
+					context.stroke();
+				}
+			
+				
+				for(y=0;y<=600;y+=50){
+				
+					if(y == 300){
+						context.lineWidth = 5;
+					}
+				
+					else{
+						context.lineWidth = 1;
+					}
+					
+					context.beginPath();
+					context.moveTo(0,y);
+					context.lineTo(600,y);
+					context.stroke();
+				
+				
+				}
+				
+			}
+			
+			function showCoordinates(event){
+				
+				coordinatesBox.value = "("+((event.clientX-rect.left-300)/scaleFactor).toString()+" , "+((event.clientY-rect.top-300)/(-1*scaleFactor)).toString()+")";
+				
+			
+			}
+			
+
+			function applyScale(){
+				
+				if(!isNaN(scaleSelectBox.value) && scaleSelectBox.value>0){
+					
+					scaleFactor = 300/Number(scaleSelectBox.value);
+					
+					context.clearRect(0,0,canvas.width,canvas.height);
+				
+					drawGridLines();
+				
+				
+				}
+			}
+				
+				
+				
+				
+			function graph(){
+				
+				// graph polynomial functions 
+				if(selectBox.value == "polynomial"){
+					
+					var degree = parseInt(prompt("What is the degree of your polynomial?"));
+					
+					var coeffecients = new Array();
+					var i,coeffecient;
+					
+					for (i= degree; i>=0; i--){
+						coeffecient = Number(prompt("What is the "+ i + "th coeffecient"));
+						coeffecients.push(coeffecient);
+					}
+					
+					var exponents = new Array();
+					var exponent;
+		
+					for (exponent= degree; exponent>=0; exponent--){
+						exponents.push(exponent);
+					}
+	
+					var j;
+					context.lineWidth=7.5;
+					
+					// draw first point 
+					x=-600;
+					for (j=0; j<=degree;j++){
+						y+=coeffecients[j]*x**exponents[j];
+					}
+					
+					context.strokeStyle=colorPicker.value.toString();
+					context.beginPath();
+					context.moveTo(scaleFactor*x+300,-1*scaleFactor*y+300);
+					
+					// draw subsequent points 
+					for(x=-600;x<=600;x+=0.001){
+					
+						y=0;
+						for (j=0; j<=degree;j++){
+							y+=coeffecients[j]*x**exponents[j];
+						}
+						
+						context.lineTo(scaleFactor*x+300,-1*scaleFactor*y+300);
+						
+					
+					}
+					
+					context.stroke();
+				}
+				
+				// graph rational functions 
+				else if(selectBox.value == "rational"){
+					
+					var degree1 = parseInt(prompt("What is the degree of your first polynomial?"));
+					var degree2 = parseInt(prompt("What is the degree of your second polynomial?"));
+		
+					var coeffecients1 = new Array();
+					var coeffecients2 = new Array();
+		
+					var i,coeffecient;
+					for (i= degree1; i>=0; i--){
+						coeffecient = Number(prompt("What is the "+ i +" th coeffecient of your first polynomial?"));
+						coeffecients1.push(coeffecient);
+					}
+			
+					for (i= degree2; i>=0; i--){
+						coeffecient = Number(prompt("What is the "+ i +" th coeffecient of your second polynomial?"));
+						coeffecients2.push(coeffecient);
+					}
+		
+					var exponents1 = new Array();
+					var exponents2 = new Array();
+					var exponent;
+		
+					for (exponent= degree1; exponent>=0; exponent--){
+						exponents1.push(exponent);
+					}
+			
+					for (exponent= degree2; exponent>=0; exponent--){
+						exponents2.push(exponent);
+					}
+	
+					var polynomial1=0,polynomial2=0;
+					var j;
+					context.lineWidth=7.5;
+					
+					// draw first point 
+					x=-600;
+					polynomial1=0
+					for (j=0; j<=degree1;j++){
+						polynomial1+=coeffecients1[j]*x**exponents1[j];
+					}
+					polynomial2=0;
+					for (j=0; j<=degree2;j++){
+						polynomial2+=coeffecients2[j]*x**exponents2[j];
+					}
+						
+						
+					y=polynomial1/polynomial2;
+						
+					context.strokeStyle=colorPicker.value.toString();
+					context.beginPath();
+					context.moveTo(scaleFactor*x+300,-1*scaleFactor*y+300);
+					
+					// draw subsequent points 
+					for(x=-600;x<=600;x+=0.001){
+						
+						y=0;
+						polynomial1=0
+						for (j=0; j<=degree1;j++){
+							polynomial1+=coeffecients1[j]*x**exponents1[j];
+						}
+						polynomial2=0;
+						for (j=0; j<=degree2;j++){
+							polynomial2+=coeffecients2[j]*x**exponents2[j];
+							}
+						
+
+						y=polynomial1/polynomial2;
+						context.lineTo(scaleFactor*x+300,-1*scaleFactor*y+300);
+						
+					}
+					
+					context.stroke();
+					
+				}
+				
+				// graph exponential functions 
+				else if(selectBox.value == "exponential"){
+				
+					var a = Number(prompt("The function is in the form y=a*(b)**(k*(x+h))+c"+"\n"+"Enter the value of a"));
+					var b = Number(prompt("The function is in the form y=a*(b)**(k*(x+h))+c"+"\n"+"Enter the value of b"));
+					var c = Number(prompt("The function is in the form y=a*(b)**(k*(x+h))+c"+"\n"+"Enter the value of c"));
+					var k = Number(prompt("The function is in the form y=a*(b)**(k*(x+h))+c"+"\n"+"Enter the value of k"));
+					var h = Number(prompt("The function is in the form y=a*(b)**(k*(x+h))+c"+"\n"+"Enter the value of h"));
+					
+					context.lineWidth=7.5;
+					
+					for(x=-600;x<=600;x+=0.001){
+					
+						y= (a*(b)**(k*(x+h)))+c;
+						
+						context.strokeStyle=colorPicker.value.toString();
+						context.beginPath();
+						context.moveTo(scaleFactor*x+300,-1*scaleFactor*y+300);
+						
+						y= (a*(b)**(k*(x+0.01+h)))+c;
+						
+						context.lineTo(scaleFactor*x+300,-1*scaleFactor*y+300);
+						context.stroke();
+					}
+				}
+				
+				// graph log functions 
+				else if(selectBox.value == "log"){
+				
+					var a = Number(prompt("The function is in the form y=a*In(k*(x+h))+c"+"\n"+"Enter the value of a"));
+					var c = Number(prompt("The function is in the form y=a*In(k*(x+h))+c"+"\n"+"Enter the value of c"));
+					var k = Number(prompt("The function is in the form y=a*In(k*(x+h))+c"+"\n"+"Enter the value of k"));
+					var h = Number(prompt("The function is in the form y=a*In(k*(x+h))+c"+"\n"+"Enter the value of h"));
+					
+					context.lineWidth=7.5;
+					
+					
+					// draw first point
+					x=-600;
+					y = (a*Math.log(k*(x+h)))+c;
+					context.strokeStyle=colorPicker.value.toString();
+					context.beginPath();
+					context.moveTo(scaleFactor*x+300,-1*scaleFactor*y+300);
+					
+					// draw subsequent points 
+					for(x=-600;x<=600;x+=0.001){
+					
+						y = (a*Math.log(k*(x+h)))+c;
+						context.lineTo(scaleFactor*x+300,-1*scaleFactor*y+300);
+						
+					}
+					
+					context.stroke();
+				}
+				
+				// graph sin functions 
+				else if(selectBox.value == "sin"){
+				
+					var a = Number(prompt("The function is in the form y=a*(sin(k*(x+h)))+c"+"\n"+"Enter the value of a"));
+					var c = Number(prompt("The function is in the form y=a*(sin(k*(x+h)))+c"+"\n"+"Enter the value of c"));
+					var k = Number(prompt("The function is in the form y=a*(sin(k*(x+h)))+c"+"\n"+"Enter the value of k"));
+					var h = Number(prompt("The function is in the form y=a*(sin(k*(x+h)))+c"+"\n"+"Enter the value of h"));
+					
+					context.lineWidth=7.5;
+					
+					// draw first point
+					x=-600;
+					y = a*(Math.sin(k*(x+h)))+c;
+					context.strokeStyle=colorPicker.value.toString();
+					context.beginPath();
+					context.moveTo(scaleFactor*x+300,-1*scaleFactor*y+300);
+					
+					// draw subsequent points 
+					for(x=-600;x<=600;x+=0.001){
+					
+						y = a*(Math.sin(k*(x+h)))+c;
+
+						context.lineTo(scaleFactor*x+300,-1*scaleFactor*y+300);
+						
+					}
+					
+					context.stroke();
+				}
+				
+				// graph cos functions 
+				else if(selectBox.value == "cos"){
+				
+					var a = Number(prompt("The function is in the form y=a*(cos(k*(x+h)))+c"+"\n"+"Enter the value of a"));
+					var c = Number(prompt("The function is in the form y=a*(cos(k*(x+h)))+c"+"\n"+"Enter the value of c"));
+					var k = Number(prompt("The function is in the form y=a*(cos(k*(x+h)))+c"+"\n"+"Enter the value of k"));
+					var h = Number(prompt("The function is in the form y=a*(cos(k*(x+h)))+c"+"\n"+"Enter the value of h"));
+					
+					context.lineWidth=7.5;
+					
+					// draw first point
+					x=-600;
+					y = a*(Math.cos(k*(x+h)))+c;
+					context.strokeStyle=colorPicker.value.toString();
+					context.beginPath();
+					context.moveTo(scaleFactor*x+300,-1*scaleFactor*y+300);
+					
+					// draw subsequent points 
+					for(x=-600;x<=600;x+=0.001){
+					
+						y = a*(Math.cos(k*(x+h)))+c;
+						context.lineTo(scaleFactor*x+300,-1*scaleFactor*y+300);
+						
+					}
+					
+					context.stroke();
+				}
+				
+				// graph tan functions 
+				else if(selectBox.value == "tan"){
+				
+					var a = Number(prompt("The function is in the form y=a*(tan(k*(x+h)))+c"+"\n"+"Enter the value of a"));
+					var c = Number(prompt("The function is in the form y=a*(tan(k*(x+h)))+c"+"\n"+"Enter the value of c"));
+					var k = Number(prompt("The function is in the form y=a*(tan(k*(x+h)))+c"+"\n"+"Enter the value of k"));
+					var h = Number(prompt("The function is in the form y=a*(tan(k*(x+h)))+c"+"\n"+"Enter the value of h"));
+					
+					context.lineWidth=7.5;
+					
+					// draw first point
+					x=-600;
+					y = a*(Math.tan(k*(x+h)))+c;
+					context.strokeStyle=colorPicker.value.toString();
+					context.beginPath();
+					context.moveTo(scaleFactor*x+300,-1*scaleFactor*y+300);
+					
+					// draw subsequent points 
+					for(x=-600;x<=600;x+=0.001){
+					
+						
+
+						y = a*(Math.tan(k*(x+h)))+c;
+						context.lineTo(scaleFactor*x+300,-1*scaleFactor*y+300);
+						
+					}
+					
+					context.stroke();
+				}
+				
+				// graph csc functions 
+				else if(selectBox.value == "csc"){
+				
+					var a = Number(prompt("The function is in the form y=a*(1/sin(k*(x+h)))+c"+"\n"+"Enter the value of a"));
+					var c = Number(prompt("The function is in the form y=a*(1/sin(k*(x+h)))+c"+"\n"+"Enter the value of c"));
+					var k = Number(prompt("The function is in the form y=a*(1/sin(k*(x+h)))+c"+"\n"+"Enter the value of k"));
+					var h = Number(prompt("The function is in the form y=a*(1/sin(k*(x+h)))+c"+"\n"+"Enter the value of h"));
+					
+					context.lineWidth=7.5;
+					
+					// draw first point
+					x=-600;
+					y = a*(1/Math.sin(k*(x+h)))+c;
+					context.strokeStyle=colorPicker.value.toString();
+					context.beginPath();
+					context.moveTo(scaleFactor*x+300,-1*scaleFactor*y+300);
+					
+					// draw subsequent points 
+					for(x=-600;x<=600;x+=0.001){
+					
+						y = a*(1/Math.sin(k*(x+h)))+c;
+
+						context.lineTo(scaleFactor*x+300,-1*scaleFactor*y+300);
+						
+					}
+					
+					context.stroke();
+				}
+				
+				// graph sec functions 
+				else if(selectBox.value == "sec"){
+				
+					var a = Number(prompt("The function is in the form y=a*(1/cos(k*(x+h)))+c"+"\n"+"Enter the value of a"));
+					var c = Number(prompt("The function is in the form y=a*(1/cos(k*(x+h)))+c"+"\n"+"Enter the value of c"));
+					var k = Number(prompt("The function is in the form y=a*(1/cos(k*(x+h)))+c"+"\n"+"Enter the value of k"));
+					var h = Number(prompt("The function is in the form y=a*(1/cos(k*(x+h)))+c"+"\n"+"Enter the value of h"));
+					
+					context.lineWidth=7.5;
+					
+					// draw first point
+					x=-600;
+					y = a*(1/Math.cos(k*(x+h)))+c;
+					context.strokeStyle=colorPicker.value.toString();
+					context.beginPath();
+					context.moveTo(scaleFactor*x+300,-1*scaleFactor*y+300);
+					
+					// draw subsequent points 
+					for(x=-600;x<=600;x+=0.001){
+					
+						y = a*(1/Math.cos(k*(x+h)))+c;
+
+						context.lineTo(scaleFactor*x+300,-1*scaleFactor*y+300);
+						
+					}
+					
+					context.stroke();
+				}
+				// graph cot functions 
+				else if(selectBox.value == "cot"){
+				
+					var a = Number(prompt("The function is in the form y=a*(1/tan(k*(x+h)))+c"+"\n"+"Enter the value of a"));
+					var c = Number(prompt("The function is in the form y=a*(1/tan(k*(x+h)))+c"+"\n"+"Enter the value of c"));
+					var k = Number(prompt("The function is in the form y=a*(1/tan(k*(x+h)))+c"+"\n"+"Enter the value of k"));
+					var h = Number(prompt("The function is in the form y=a*(1/tan(k*(x+h)))+c"+"\n"+"Enter the value of h"));
+					
+					context.lineWidth=7.5;
+					
+					// draw first point
+					x=-600;
+					y = a*(1/Math.tan(k*(x+h)))+c;
+					context.strokeStyle=colorPicker.value.toString();
+					context.beginPath();
+					context.moveTo(scaleFactor*x+300,-1*scaleFactor*y+300);
+					
+					// draw subsequent points 
+					for(x=-600;x<=600;x+=0.001){
+					
+						y = a*(1/Math.tan(k*(x+h)))+c;
+
+						context.lineTo(scaleFactor*x+300,-1*scaleFactor*y+300);
+						
+					}
+					
+					context.stroke();
+				}
+				
+				// graph absolute value functions
+				else if(selectBox.value == "absolute value"){
+				
+					var a = Number(prompt("The function is in the form y=a*(abs(k*(x+h)))+c"+"\n"+"Enter the value of a"));
+					var c = Number(prompt("The function is in the form y=a*(abs(k*(x+h)))+c"+"\n"+"Enter the value of c"));
+					var k = Number(prompt("The function is in the form y=a*(abs(k*(x+h)))+c"+"\n"+"Enter the value of k"));
+					var h = Number(prompt("The function is in the form y=a*(abs(k*(x+h)))+c"+"\n"+"Enter the value of h"));
+					
+					context.lineWidth=7.5;
+					
+					// draw first point
+					x=-600;
+					y = a*(Math.abs(k*(x+h)))+c;
+					context.strokeStyle=colorPicker.value.toString();
+					context.beginPath();
+					context.moveTo(scaleFactor*x+300,-1*scaleFactor*y+300);
+					
+					// draw subsequent points 
+					for(x=-600;x<=600;x+=0.001){
+					
+						
+						y = a*(Math.abs(k*(x+h)))+c;
+						context.lineTo(scaleFactor*x+300,-1*scaleFactor*y+300);
+						
+					}
+					
+					context.stroke();
+				}
+				
+				// graph square root functions
+				else if(selectBox.value == "square root"){
+				
+					var a = Number(prompt("The function is in the form y=a*(sqrt(k*(x+h)))+c"+"\n"+"Enter the value of a"));
+					var c = Number(prompt("The function is in the form y=a*(sqrt(k*(x+h)))+c"+"\n"+"Enter the value of c"));
+					var k = Number(prompt("The function is in the form y=a*(sqrt(k*(x+h)))+c"+"\n"+"Enter the value of k"));
+					var h = Number(prompt("The function is in the form y=a*(sqrt(k*(x+h)))+c"+"\n"+"Enter the value of h"));
+					
+					context.lineWidth=7.5;
+					
+					// draw first point
+					x=-600;
+					y = a*(Math.sqrt(k*(x+h)))+c;
+					context.strokeStyle=colorPicker.value.toString();
+					context.beginPath();
+					context.moveTo(scaleFactor*x+300,-1*scaleFactor*y+300);
+					
+					// draw subsequent points 
+					for(x=-600;x<=600;x+=0.001){
+					
+						y = a*(Math.sqrt(k*(x+h)))+c;
+						context.lineTo(scaleFactor*x+300,-1*scaleFactor*y+300);
+						
+					}
+					
+					context.stroke();
+				}
+				
+				// graph ellipses 
+				else if(selectBox.value == "ellipse"){
+				
+					var a = Number(prompt("The function is in the form ax**2 +by**2 =r**2"+"\n"+"Enter the value of a"));
+					var b = Number(prompt("The function is in the form ax**2 +by**2 =r**2"+"\n"+"Enter the value of b"));
+					var r = Number(prompt("The function is in the form ax**2 +by**2 =r**2"+"\n"+"Enter the value of r"));
+					var angle;
+					
+					context.lineWidth=7.5;
+					
+					// draw first point
+					angle=0;
+					x=a*Math.cos(angle)*r;
+					y=b*Math.sin(angle)*r;
+					context.strokeStyle=colorPicker.value.toString();
+					context.beginPath();
+					context.moveTo(scaleFactor*x+300,-1*scaleFactor*y+300);
+					
+					// draw subsequent points 
+					for(angle=0;angle<=2*Math.PI;angle+=2*Math.PI/1200000){
+					
+						x=a*Math.cos(angle)*r;
+						y=b*Math.sin(angle)*r;
+						context.lineTo(scaleFactor*x+300,-1*scaleFactor*y+300);
+						
+					}
+					
+					context.stroke();
+				}
+				
+				else if(selectBox.value == "derivative polynomial"){
+					
+
+					var degree = parseInt(prompt("What is the  degree of your polynomial?"));
+					var coeffecients = new Array();
+					var i,coeffecient;
+					for (i= degree; i>=0; i--){
+						coeffecient = Number(prompt("What is the"+ i +"th coeffecient"));
+						coeffecients.push(coeffecient);
+					}
+	
+					var exponents = new Array();
+					var exponent;
+		
+					for (exponent= degree; exponent>=0; exponent--){
+						exponents.push(exponent);
+					}
+			
+					var diffcoeffecients = new Array();
+					var diffexponents = new Array();
+					for (i=0; i<=degree;i++){
+						diffcoeffecients.push(coeffecients[i]*exponents[i]);
+						diffexponents.push(exponents[i]-1);
+					}
+					
+					context.lineWidth=7.5;
+					
+					// draw first point
+					x=-600;
+					y=0;
+					for (j=0; j<=degree;j++){
+						y+=diffcoeffecients[j]*x**diffexponents[j];
+					}
+					
+					context.strokeStyle=colorPicker.value.toString();
+					context.beginPath();
+					context.moveTo(scaleFactor*x+300,-1*scaleFactor*y+300);
+					
+					// draw subsequent points 
+					for(x=-600;x<=600;x+=0.001){
+						
+						y=0;
+						for (j=0; j<=degree;j++){
+							y+=diffcoeffecients[j]*x**diffexponents[j];
+						}
+						
+						context.lineTo(scaleFactor*x+300,-1*scaleFactor*y+300);
+						
+					}
+					
+					context.stroke();
+		
+		
+				}
+				
+				else if(selectBox.value == "derivative rational"){
+					
+		var degree1 = parseInt(prompt("What is the  degree of your first polynomial?"));
+		var degree2 = parseInt(prompt("What is the  degree of your second polynomial?"));
+		
+			
+		var coeffecients1 = new Array();
+		var coeffecients2 = new Array();
+		
+		var i,coeffecient;
+		for (i= degree1; i>=0; i--){
+			coeffecient = Number(prompt("What is the"+ i +"th coeffecient of your first polynomial?"));
+			coeffecients1.push(coeffecient);
+			}
+		for (i= degree2; i>=0; i--){
+			coeffecient = Number(prompt("What is the"+ i +"th coeffecient of your second polynomial?"));
+			coeffecients2.push(coeffecient);
+			}
+			
+		var exponents1 = new Array();
+		var exponents2 = new Array();
+		var exponent;
+		
+		for (exponent= degree1; exponent>=0; exponent--){
+			exponents1.push(exponent);
+			}
+		for (exponent= degree2; exponent>=0; exponent--){
+			exponents2.push(exponent);
+			}
+		
+		context.lineWidth=7.5;
+		
+		// draw first point
+		x=-600;
+		y=0;
+		var num1=x-0.000001;
+			var num2=x+0.000001;
+		
+			var polynomial1=0,polynomial2=0;
+			var j;
+			for (j=0; j<=degree1;j++){
+				polynomial1+=coeffecients1[j]*num1**exponents1[j];
+				polynomial2+=coeffecients1[j]*num2**exponents1[j];
+
+				}
+		
+			var polynomial3=0,polynomial4=0;
+			for (j=0; j<=degree2;j++){
+				polynomial3+=coeffecients2[j]*num1**exponents2[j];
+				polynomial4+=coeffecients2[j]*num2**exponents2[j];
+				}
+			
+			var rational1= polynomial1/polynomial3;
+			var rational2 = polynomial2/polynomial4;
+			var y = (rational2-rational1)/(num2-num1);
+			
+			context.strokeStyle=colorPicker.value.toString();
+			context.beginPath();
+			context.moveTo(scaleFactor*x+300,-1*scaleFactor*y+300);
+					
+		// draw subsequent points 
+		for(x=-600;x<=600;x+=0.001){
+					
+			var num1=x-0.000001;
+			var num2=x+0.000001;
+			
+			var polynomial1=0,polynomial2=0;
+			var j;
+			for (j=0; j<=degree1;j++){
+				polynomial1+=coeffecients1[j]*num1**exponents1[j];
+				polynomial2+=coeffecients1[j]*num2**exponents1[j];
+
+				}
+		
+			var polynomial3=0,polynomial4=0;
+			for (j=0; j<=degree2;j++){
+				polynomial3+=coeffecients2[j]*num1**exponents2[j];
+				polynomial4+=coeffecients2[j]*num2**exponents2[j];
+				}
+			
+			var rational1= polynomial1/polynomial3;
+			var rational2 = polynomial2/polynomial4;
+			var y = (rational2-rational1)/(num2-num1);
+		
+			context.lineTo(scaleFactor*x+300,-1*scaleFactor*y+300);
+			
+			y=0;
+		
+		}
+		
+		context.stroke();
+		
+				}
+				else if(selectBox.value == "derivative exponential"){
+				
+					var a = Number(prompt("The function is in the form y=a*(b)**(k*(x+h))+c"+"\n"+"Enter the value of a"));
+					var b = Number(prompt("The function is in the form y=a*(b)**(k*(x+h))+c"+"\n"+"Enter the value of b"));
+					var c = Number(prompt("The function is in the form y=a*(b)**(k*(x+h))+c"+"\n"+"Enter the value of c"));
+					var k = Number(prompt("The function is in the form y=a*(b)**(k*(x+h))+c"+"\n"+"Enter the value of k"));
+					var h = Number(prompt("The function is in the form y=a*(b)**(k*(x+h))+c"+"\n"+"Enter the value of h"));
+					
+					context.lineWidth=7.5;
+					
+					for(x=-600;x<=600;x+=0.001){
+					
+						y= a*k*(b)**(k*(x+h))*Math.log(b);
+						
+						context.strokeStyle=colorPicker.value.toString();
+						context.beginPath();
+						context.moveTo(scaleFactor*x+300,-1*scaleFactor*y+300);
+						
+						y= a*k*(b)**(k*(x+0.01+h))*Math.log(b);
+						
+						context.lineTo(scaleFactor*x+300,-1*scaleFactor*y+300);
+						context.stroke();
+					}
+					
+				}
+				
+				
+				
+				else if(selectBox.value == "derivative log"){
+					
+					var a = Number(prompt("The function is in the form y=a*(ln(k*(x+h)))+c"+"\n"+"Enter the value of a"));
+					var c = Number(prompt("The function is in the form y=a*(ln(k*(x+h)))+c"+"\n"+"Enter the value of c"));
+					var k = Number(prompt("The function is in the form y=a*(ln(k*(x+h)))+c"+"\n"+"Enter the value of k"));
+					var h = Number(prompt("The function is in the form y=a*(ln(k*(x+h)))+c"+"\n"+"Enter the value of h"));
+					
+					context.lineWidth=7.5;
+					
+					// draw first point 
+					x=-600;
+					y = a*k*(1/(k*(x+h)));
+					context.strokeStyle=colorPicker.value.toString();
+					context.beginPath();
+					context.moveTo(scaleFactor*x+300,-1*scaleFactor*y+300);
+			
+					// draw subsequent points 
+					for(x=-600;x<=600;x+=0.001){
+		
+						y = a*k*(1/(k*(x+h)));
+						context.lineTo(scaleFactor*x+300,-1*scaleFactor*y+300);
+					}
+					
+					context.stroke();
+					
+				}
+				
+				else if(selectBox.value == "derivative sin"){
+					
+					var a = Number(prompt("The function is in the form y=a*(sin(k*(x+h)))+c"+"\n"+"Enter the value of a"));
+					var c = Number(prompt("The function is in the form y=a*(sin(k*(x+h)))+c"+"\n"+"Enter the value of c"));
+					var k = Number(prompt("The function is in the form y=a*(sin(k*(x+h)))+c"+"\n"+"Enter the value of k"));
+					var h = Number(prompt("The function is in the form y=a*(sin(k*(x+h)))+c"+"\n"+"Enter the value of h"));
+					
+					context.lineWidth=7.5;
+					
+					// draw first point 
+					x=-600;
+					y = a*k*(Math.cos(k*(x+h)));
+					context.strokeStyle=colorPicker.value.toString();
+					context.beginPath();
+					context.moveTo(scaleFactor*x+300,-1*scaleFactor*y+300);
+			
+					// draw subsequent points 
+					for(x=-600;x<=600;x+=0.001){
+		
+						y = a*k*(Math.cos(k*(x+h)));
+						context.lineTo(scaleFactor*x+300,-1*scaleFactor*y+300);
+					}
+					
+					context.stroke();
+					
+				}
+				
+				else if(selectBox.value == "derivative cos"){
+					
+					
+					var a = Number(prompt("The function is in the form y=a*(cos(k*(x+h)))+c"+"\n"+"Enter the value of a"));
+					var c = Number(prompt("The function is in the form y=a*(cos(k*(x+h)))+c"+"\n"+"Enter the value of c"));
+					var k = Number(prompt("The function is in the form y=a*(cos(k*(x+h)))+c"+"\n"+"Enter the value of k"));
+					var h = Number(prompt("The function is in the form y=a*(cos(k*(x+h)))+c"+"\n"+"Enter the value of h"));
+					
+					context.lineWidth=7.5;
+					
+					// draw first point 
+					x=-600;
+					y = -1*a*k*(Math.sin(k*(x+h)));
+					context.strokeStyle=colorPicker.value.toString();
+					context.beginPath();
+					context.moveTo(scaleFactor*x+300,-1*scaleFactor*y+300);
+			
+					// draw subsequent points 
+					for(x=-600;x<=600;x+=0.001){
+		
+						y = -1*a*k*(Math.sin(k*(x+h)));
+						context.lineTo(scaleFactor*x+300,-1*scaleFactor*y+300);
+					}
+					
+					context.stroke();
+				}
+				
+				
+				else if(selectBox.value == "derivative square root"){
+				
+					var a = Number(prompt("The function is in the form y=a*(sqrt(k*(x+h)))+c"+"\n"+"Enter the value of a"));
+					var c = Number(prompt("The function is in the form y=a*(sqrt(k*(x+h)))+c"+"\n"+"Enter the value of c"));
+					var k = Number(prompt("The function is in the form y=a*(sqrt(k*(x+h)))+c"+"\n"+"Enter the value of k"));
+					var h = Number(prompt("The function is in the form y=a*(sqrt(k*(x+h)))+c"+"\n"+"Enter the value of h"));
+					
+					context.lineWidth=7.5;
+					
+					// draw first point 
+					x=-600;
+					y = a*k*(1/(2*Math.sqrt(k*(x+h))));
+					context.strokeStyle=colorPicker.value.toString();
+					context.beginPath();
+					context.moveTo(scaleFactor*x+300,-1*scaleFactor*y+300);
+			
+					// draw subsequent points 
+					for(x=-600;x<=600;x+=0.001){
+		
+						y = a*k*(1/(2*Math.sqrt(k*(x+h))));
+						context.lineTo(scaleFactor*x+300,-1*scaleFactor*y+300);
+					}
+					
+					context.stroke();
+				}
+				else if (selectBox.value == "integral polynomial"){
+					
+					var degree = parseInt(prompt("What is the  degree of your polynomial?"));
+					
+					var lowerBound = Number(prompt("What is your lower bound?"));
+			
+					var coeffecients = new Array();
+					var i,coeffecient;
+					for (i= degree; i>=0; i--){
+						coeffecient = Number(prompt("What is the"+ i +"th coeffecient"));
+						coeffecients.push(coeffecient);
+					}
+	
+					var exponents = new Array();
+					var exponent;
+		
+					for (exponent= degree; exponent>=0; exponent--){
+						exponents.push(exponent);
+					}
+			
+					var anticoeffecients = new Array();
+					var antiexponents = new Array();
+					for (i=0; i<=degree;i++){
+						anticoeffecients.push((coeffecients[i]/(exponents[i]+1)));
+						antiexponents.push(exponents[i]+1);
+					}
+					
+					var lower_integral=0;
+					var upper_integral=0;
+					var j,integral=0;
+					
+					context.lineWidth=7.5;
+					
+					// draw first point
+					x=-600;
+					for (j=0; j<=degree;j++){
+							lower_integral+=anticoeffecients[j]*lowerBound**antiexponents[j];
+							upper_integral+=anticoeffecients[j]*x**antiexponents[j];
+							}
+					
+					integral = upper_integral-lower_integral;
+					
+					context.strokeStyle=colorPicker.value.toString();
+					context.beginPath();
+					context.moveTo(scaleFactor*x+300,-1*scaleFactor*integral+300);
+					
+					// draw subsequent points 
+					for(x=-600;x<=600;x+=0.001){
+					
+						upper_integral=0;
+				
+						for (j=0; j<=degree;j++){
+					
+							upper_integral+=anticoeffecients[j]*x**antiexponents[j];
+							}
+			
+						integral = upper_integral - lower_integral;
+						context.lineTo(scaleFactor*x+300,-1*scaleFactor*integral+300);
+					}
+					
+					context.stroke();
+		
+				}
+				
+				else if(selectBox.value == "integral sin"){
+		
+					var lowerBound = Number(prompt("What is your lower bound?"));
+		
+					var a = Number(prompt("The function is in the form y=a*(sin(k*(x+h)))+c"+"\n"+"Enter the value of a"));
+					var c = Number(prompt("The function is in the form y=a*(sin(k*(x+h)))+c"+"\n"+"Enter the value of c"));
+					var k = Number(prompt("The function is in the form y=a*(sin(k*(x+h)))+c"+"\n"+"Enter the value of k"));
+					var h = Number(prompt("The function is in the form y=a*(sin(k*(x+h)))+c"+"\n"+"Enter the value of h"));
+					
+					context.lineWidth=7.5;
+					
+					// draw first point 
+					x=-600;
+					var upper_integral = -1*a*k*(Math.cos(k*(x+h)))+c*x;
+					var lower_integral = -1*a*k*(Math.cos(k*(lowerBound+h)))+c*lowerBound;
+					var integral = upper_integral - lower_integral;
+					context.strokeStyle=colorPicker.value.toString();
+					context.beginPath();
+					context.moveTo(scaleFactor*x+300,-1*scaleFactor*integral+300);
+					
+					// draw subsequent points 
+					for(x=-600;x<=600;x+=0.001){
+		
+						upper_integral = -1*a*k*(Math.cos(k*(x+h)))+c*x;
+						integral = upper_integral - lower_integral;
+						context.lineTo(scaleFactor*x+300,-1*scaleFactor*integral+300);
+					}
+					
+					context.stroke();
+		
+				}
+				
+				else if(selectBox.value == "integral cos"){
+		
+					var lowerBound = Number(prompt("What is your lower bound?"));
+		
+					var a = Number(prompt("The function is in the form y=a*(cos(k*(x+h)))+c"+"\n"+"Enter the value of a"));
+					var c = Number(prompt("The function is in the form y=a*(cos(k*(x+h)))+c"+"\n"+"Enter the value of c"));
+					var k = Number(prompt("The function is in the form y=a*(cos(k*(x+h)))+c"+"\n"+"Enter the value of k"));
+					var h = Number(prompt("The function is in the form y=a*(cos(k*(x+h)))+c"+"\n"+"Enter the value of h"));
+					
+					context.lineWidth=7.5;
+					
+					// draw first point 
+					x=-600;
+					var upper_integral = a*k*(Math.sin(k*(x+h)))+c*x;
+					var lower_integral = a*k*(Math.sin(k*(lowerBound+h)))+c*lowerBound;
+					var integral = upper_integral - lower_integral;
+					context.strokeStyle=colorPicker.value.toString();
+					context.beginPath();
+					context.moveTo(scaleFactor*x+300,-1*scaleFactor*integral+300);
+					
+					// draw subsequent points 
+					for(x=-600;x<=600;x+=0.001){
+		
+						upper_integral = a*k*(Math.sin(k*(x+h)))+c*x;
+						integral = upper_integral - lower_integral;
+						context.lineTo(scaleFactor*x+300,-1*scaleFactor*integral+300);
+					}
+					
+					context.stroke();
+		
+				}
+				
+				else if(selectBox.value == "integral square root"){
+		
+					var lowerBound = Number(prompt("What is your lower bound?"));
+		
+					var a = Number(prompt("The function is in the form y=a*(sqrt(k*(x+h)))+c"+"\n"+"Enter the value of a"));
+					var c = Number(prompt("The function is in the form y=a*(sqrt(k*(x+h)))+c"+"\n"+"Enter the value of c"));
+					var k = Number(prompt("The function is in the form y=a*(sqrt(k*(x+h)))+c"+"\n"+"Enter the value of k"));
+					var h = Number(prompt("The function is in the form y=a*(sqrt(k*(x+h)))+c"+"\n"+"Enter the value of h"));
+					
+					context.lineWidth=7.5;
+					
+					// draw first point 
+					x=-600;
+					var upper_integral = 2*a*x**(3/2)/(3*k)+c*x;
+					var lower_integral = 2*a*lowerBound**(3/2)/(3*k)+c*lowerBound;
+					var integral = upper_integral - lower_integral;
+					context.strokeStyle=colorPicker.value.toString();
+					context.beginPath();
+					context.moveTo(scaleFactor*x+300,-1*scaleFactor*integral+300);
+					
+					// draw subsequent points 
+					for(x=-600;x<=600;x+=0.001){
+		
+						upper_integral = 2*a*x**(3/2)/(3*k)+c*x;
+						integral = upper_integral - lower_integral;
+						context.lineTo(scaleFactor*x+300,-1*scaleFactor*integral+300);
+					}
+					
+					context.stroke();
+		
+				}
+				
+				
+				
+				else if(selectBox.value == "integral log"){
+					
+	
+				var lowerBound = Number(prompt("What is your lower bound?"));
+
+				var a = Number(prompt("The function is in the form y=a*In(k*(x+h))+c"+"\n"+"Enter the value of a"));
+				var c = Number(prompt("The function is in the form y=a*In(k*(x+h))+c"+"\n"+"Enter the value of c"));
+				var k = Number(prompt("The function is in the form y=a*In(k*(x+h))+c"+"\n"+"Enter the value of k"));
+				var h = Number(prompt("The function is in the form y=a*In(k*(x+h))+c"+"\n"+"Enter the value of h"));
+		
+				
+				context.lineWidth=7.5;
+					
+					// draw first point 
+					x=-600;
+					var upper_integral=a*(x+h)*Math.log(k*(x+h))+(c-a)*x;
+					var lower_integral=a*(lowerBound+h)*Math.log(k*(lowerBound+h))+(c-a)*lowerBound;
+					var integral = upper_integral - lower_integral;
+					context.strokeStyle=colorPicker.value.toString();
+					context.beginPath();
+					context.moveTo(scaleFactor*x+300,-1*scaleFactor*integral+300);
+					
+					// draw subsequent points 
+					for(x=-600;x<=600;x+=0.001){
+						upper_integral=a*(x+h)*Math.log(k*(x+h))+(c-a)*x;
+						integral = upper_integral - lower_integral;
+						
+						context.lineTo(scaleFactor*x+300,-1*scaleFactor*integral+300);
+						
+					}
+					
+					context.stroke();
+			
+				}
+				
+				else if (selectBox.value == "integral exponential"){
+					
+				
+					var lowerBound = Number(prompt("What is your lower bound?"));
+		
+
+					var a = Number(prompt("The function is in the form y=a*(b)**(k*(x+h))+c"+"\n"+"Enter the value of a"));
+					var b = Number(prompt("The function is in the form y=a*(b)**(k*(x+h))+c"+"\n"+"Enter the value of b"));
+					var c = Number(prompt("The function is in the form y=a*(b)**(k*(x+h))+c"+"\n"+"Enter the value of c"));
+					var k = Number(prompt("The function is in the form y=a*(b)**(k*(x+h))+c"+"\n"+"Enter the value of k"));
+					var h = Number(prompt("The function is in the form y=a*(b)**(k*(x+h))+c"+"\n"+"Enter the value of h"));
+					
+					context.lineWidth=7.5;
+					
+					// draw first point 
+					x=-600;
+					var upper_integral=(a*(b)**(k*(x+h)))/(Math.log(b)*k)+c*x;
+					var lower_integral=(a*(b)**(k*(lowerBound+h)))/(Math.log(b)*k)+c*lowerBound;
+					var integral = upper_integral - lower_integral;
+					context.strokeStyle=colorPicker.value.toString();
+					context.beginPath();
+					context.moveTo(scaleFactor*x+300,-1*scaleFactor*integral+300);
+					
+		
+					// draw subsequent points 
+					for(x=-600;x<=600;x+=0.001){
+						
+						upper_integral=(a*(b)**(k*(x+h)))/(Math.log(b)*k)+c*x;
+						integral = upper_integral - lower_integral;
+						
+						context.strokeStyle=colorPicker.value.toString();
+						context.beginPath();
+						context.moveTo(scaleFactor*x+300,-1*scaleFactor*integral+300);
+					
+						upper_integral=(a*(b)**(k*(x+0.01+h)))/(Math.log(b)*k)+c*x;
+						integral = upper_integral - lower_integral;
+						
+						context.lineTo(scaleFactor*x+300,-1*scaleFactor*integral+300);
+						context.stroke();
+					}
+					
+					
+		
+				}
+				
+				
+			}
+		</script>
+	</body>
+</html>	
+	
+	
