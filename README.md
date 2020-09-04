@@ -4,7 +4,7 @@ Description-A desmos like application that lets users graph multiple types of fu
 center to zoom in on different parts of the graph. 
 NOTE: The number you type into the "Scale graph" box becomes half the length of the square grid.
 
-Video demonstration avaliable at https://www.youtube.com/watch?v=ohNvR1L6C3g&t=9s
+Video demonstration avaliable at https://www.youtube.com/watch?v=qhnS33M_veg
 
 # Required
 
