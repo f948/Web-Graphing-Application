@@ -1,0 +1,4515 @@
+<html>
+	<head>
+		<style>
+			canvas{
+				   border  : 1px solid black;
+				  }
+				  
+			#coordinates {
+				width: 300px;
+				}
+				
+			.container {
+				float: left;
+			}
+
+		</style>
+	<div class="container">
+	 <canvas id="canvas" width="600" height = "600"  onclick="showCoordinates(event)" onmousedown="mouseDown(event)"  onmouseup="mouseUp(event)"  onmouseout="mouseOut()"></canvas>
+	 </div>
+	 <div class="container">
+	 Click on canvas to see coordinates
+	 <br>
+	 <input type="text" id="coordinates" width="200" readonly>
+	 <br>
+	 Choose function type 
+	 <select id="function">
+		<option value="polynomial">Polynomial</option>
+		<option value="rational">Rational</option>
+		<option value="exponential">Exponential</option>
+		<option value="log">Log</option>
+		<option value="sin">Sin</option>
+		<option value="cos">Cos</option>
+		<option value="tan">Tan</option>
+		<option value="csc">Csc</option>
+		<option value="sec">Sec</option>
+		<option value="cot">Cot</option>
+		<option value="arcsin">Arcsin</option>
+		<option value="arccos">Arccos</option>
+		<option value="arctan">Arctan</option>
+		<option value="arccsc">Arccsc</option>
+		<option value="arcsec">Arcsec</option>
+		<option value="arccot">Arccot</option>
+		<option value="absolute value">Absolute Value</option>
+		<option value="square root">Square Root</option>
+		<option value="ellipse">Ellipse</option>
+		<option value="derivative polynomial">Derivative Polynomial</option>
+		<option value="derivative rational">Derivative Rational</option>
+		<option value="derivative exponential">Derivative Exponential</option>
+		<option value="derivative log">Derivative Log</option>
+	    <option value="derivative sin">Derivative Sin</option>
+		<option value="derivative cos">Derivative Cos</option>
+		<option value="derivative tan">Derivative Tan</option>
+		<option value="derivative arcsin">Derivative Arcsin</option>
+		<option value="derivative arccos">Derivative Arccos</option>
+		<option value="derivative arctan">Derivative Arctan</option>
+		<option value="derivative square root">Derivative Square Root</option>
+		<option value="integral polynomial">Integral Polynomial</option>
+		<option value="integral rational">Integral Rational</option>
+		<option value="integral sin">Integral Sin</option>
+		<option value="integral cos">Integral Cos</option>
+		<option value="integral tan">Integral Tan</option>
+		<option value="integral arcsin">Integral Arcsin</option>
+		<option value="integral arccos">Integral Arccos</option>
+		<option value="integral arctan">Integral Arctan</option>
+		<option value="integral exponential">Integral Exponential</option>
+		<option value="integral log">Integral Log</option>
+		<option value="integral square root">Integral Square Root</option>
+	</select>
+	<br>
+	 Scale Factor
+	 <input type="number" id="scale" value="300">
+	 <br>
+	 Start X
+	 <input type="number" id="startX" value="0">
+	 <br>
+	 Start Y
+	 <input type="number" id="startY" value="0">
+	 <br>
+	 <input type="button" value ="Apply"onclick="apply()">
+	 <br>
+	 Zoom
+	 <input type="range" min="20" max="500" value="100" id="slide" onchange="zoom()">
+	 <p id="zoom">100%</p>
+	 <br>
+	Choose color for the graph
+	 <input type="color" id="color" value="#000000">
+	 <br>
+	<input type="button" value ="Graph"onclick="graph()">
+	<input type="button" value ="Restart"onclick="location.reload()">
+	</div>
+	<br>
+	<table id="functions"border=1>
+		<tr>
+			<th>Function Type</th>
+			<th>Function</th>
+			<th>Delete</th>
+		</tr>
+	</table>
+	</head>
+	<body>
+		<script>
+		
+			// global variables 
+			var x,y;
+			var scaleFactor=1;
+			var i,j,k,l,id=1;
+			var startX=0,startY=0;
+			var functions = new Array();
+			var points = new Array();
+			var initX,initY,endX,endY;
+			var degree1,degree2;
+			var coeffecients= new Array(),coeffecients1 = new Array(),coeffecients2= new Array();
+			var coeffecient;
+			var exponents= new Array(),exponents1 = new Array(),exponents2= new Array();
+			var exponent;
+			var a,b,c,h,k,r,s,t;
+			var polynomial1=0,polynomial2=0,polynomial3=0,polynomial4=0,rational1=0,rational2=0,num1=0,num2=0;
+			var angle,point;
+			var diffcoeffecients = new Array(),diffcoeffecients1= new Array(),diffcoeffecients2= new Array();
+			var diffexponents = new Array(),diffexponents1= new Array(),diffexponents2= new Array();
+			var lowerBound,lastValidValue=300;
+			var upper_integral,lower_integral;
+			var diffcoeffecients = new Array(),diffcoeffecients1= new Array(),diffcoeffecients2= new Array();
+			var diffexponents = new Array(),diffexponents1= new Array(),diffexponents2= new Array();
+			var anticoeffecients = new Array(),anticoeffecients1= new Array(),anticoeffecients2= new Array();
+			var antiexponents = new Array(),antiexponents1= new Array(),antiexponents2= new Array();
+			var string,response;
+			
+			// global constants 
+			var canvas = document.getElementById("canvas");
+			var context = canvas.getContext('2d');
+			var colorPicker = document.getElementById("color");
+			var selectBox = document.getElementById("function");
+			var scaleSelectBox = document.getElementById("scale");
+			var xSelectBox = document.getElementById("startX");
+			var ySelectBox = document.getElementById("startY");
+			var coordinatesBox = document.getElementById("coordinates");
+			var rect = canvas.getBoundingClientRect();
+			var slider = document.getElementById("slide");
+			var percentZoom = document.getElementById("zoom");
+			var functionsTable = document.getElementById("functions");
+			
+			drawGridLines();
+			
+			// draw grid lines 
+			function drawGridLines(){
+				
+				context.strokeStyle = "black";
+				
+				for(x=0;x<=600;x+=50){
+				
+					if(x == 300){
+						context.lineWidth = 2;
+					}
+				
+					else{
+						context.lineWidth = 1;
+					}
+				
+					context.beginPath();
+					context.moveTo(x,0);
+					context.lineTo(x,600);
+					context.stroke();
+				}
+			
+				
+				for(y=0;y<=600;y+=50){
+				
+					if(y == 300){
+						context.lineWidth = 2;
+					}
+				
+					else{
+						context.lineWidth = 1;
+					}
+					
+					context.beginPath();
+					context.moveTo(0,y);
+					context.lineTo(600,y);
+					context.stroke();
+				
+				
+				}
+				
+				
+				
+			}
+			
+			function zoom(){
+				
+				percentZoom.innerHTML=slider.value.toString()+"%";
+				
+				scaleFactor = (300/Number(scaleSelectBox.value))/(Number(slider.value)/100);
+				
+				context.clearRect(0,0,canvas.width,canvas.height);
+						
+				drawGridLines();
+					
+				redrawGraphs();
+			}
+			
+			function mouseDown(event){
+				
+				initX=(event.clientX-rect.left-300)/scaleFactor;
+				initY=(event.clientY-rect.top-300)/scaleFactor;
+				
+				canvas.addEventListener("mousemove",translate);
+			}
+			
+
+			function mouseOut(){
+				
+				canvas.removeEventListener("mousemove",translate);
+			}
+			
+			function mouseUp(event){
+				
+				canvas.removeEventListener("mousemove",translate);
+			}
+			
+			function translate(){
+			
+				endX=(event.clientX-rect.left-300)/scaleFactor;
+				endY=(event.clientY-rect.top-300)/scaleFactor;
+				
+				startX+=(endX-initX)/10;
+				startY+=(initY-endY)/10;
+				
+				xSelectBox.value=startX;
+				ySelectBox.value=startY;
+					
+				context.clearRect(0,0,canvas.width,canvas.height);
+						
+				drawGridLines();
+					
+				redrawGraphs();
+			}
+			
+			function showCoordinates(event){
+				
+
+				coordinatesBox.value = "("+(((event.clientX-rect.left-300)/scaleFactor)+startX).toString()+" , "+((event.clientY-rect.top-300)/(-1*scaleFactor)+startY).toString()+")";
+				
+				
+			}
+			
+
+			function apply(){
+				
+				if(scaleSelectBox.value>0){
+					
+					lastValidValue=Number(scaleSelectBox.value);
+					
+					scaleFactor = (300/Number(scaleSelectBox.value))/(Number(slider.value)/100);
+					
+					startX =  Number(xSelectBox.value);
+					startY =  Number(ySelectBox.value);
+					
+					context.clearRect(0,0,canvas.width,canvas.height);
+					
+					drawGridLines();
+					
+					redrawGraphs();
+					
+				
+				}
+				
+				else if(scaleSelectBox.value <= 0){
+					
+					scaleSelectBox.value=lastValidValue;
+				
+				}
+				
+				
+			}
+				
+			function redrawGraphs(){
+			
+				
+				for(i=0;i<=functions.length-1;i++){
+					
+					if(!functions[i].deleted){
+					
+						if(functions[i].type == "polynomial"){
+							graphFunction({type:"polynomial",coeffecients:functions[i].coeffecients,degree:functions[i].degree,exponents:functions[i].exponents,color:functions[i].color});
+						}
+						else if(functions[i].type == "rational"){
+							graphFunction({type:"rational",coeffecients1:functions[i].coeffecients1,coeffecients2:functions[i].coeffecients2,degree1:functions[i].degree1,degree2:functions[i].degree2,exponents1:functions[i].exponents1,exponents2:functions[i].exponents2,color:functions[i].color});
+						}
+						else if(functions[i].type == "exponential"){
+							graphFunction({type:"exponential",a:functions[i].a,b:functions[i].b,c:functions[i].c,k:functions[i].k,h:functions[i].h,color:functions[i].color});
+						}
+						else if(functions[i].type == "log"){
+							graphFunction({type:"log",a:functions[i].a,c:functions[i].c,k:functions[i].k,h:functions[i].h,color:functions[i].color});
+						}
+						else if(functions[i].type == "sin"){
+							graphFunction({type:"sin",a:functions[i].a,c:functions[i].c,k:functions[i].k,h:functions[i].h,color:functions[i].color});
+						}
+						else if(functions[i].type == "cos"){
+							graphFunction({type:"cos",a:functions[i].a,c:functions[i].c,k:functions[i].k,h:functions[i].h,color:functions[i].color});
+						}
+						else if(functions[i].type == "tan"){
+							graphFunction({type:"tan",a:functions[i].a,c:functions[i].c,k:functions[i].k,h:functions[i].h,color:functions[i].color});
+						}
+						else if(functions[i].type == "csc"){
+							graphFunction({type:"csc",a:functions[i].a,c:functions[i].c,k:functions[i].k,h:functions[i].h,color:functions[i].color});
+						}
+						else if(functions[i].type == "sec"){
+							graphFunction({type:"sec",a:functions[i].a,c:functions[i].c,k:functions[i].k,h:functions[i].h,color:functions[i].color});
+						}
+						else if(functions[i].type == "cot"){
+							graphFunction({type:"cot",a:functions[i].a,c:functions[i].c,k:functions[i].k,h:functions[i].h,color:functions[i].color});
+						}
+						else if(functions[i].type == "arcsin"){
+							graphFunction({type:"arcsin",a:functions[i].a,c:functions[i].c,k:functions[i].k,h:functions[i].h,color:functions[i].color});
+						}
+						else if(functions[i].type == "arccos"){
+							graphFunction({type:"arccos",a:functions[i].a,c:functions[i].c,k:functions[i].k,h:functions[i].h,color:functions[i].color});
+						}
+						else if(functions[i].type == "arctan"){
+							graphFunction({type:"arctan",a:functions[i].a,c:functions[i].c,k:functions[i].k,h:functions[i].h,color:functions[i].color});
+						}
+						else if(functions[i].type == "square root"){
+							graphFunction({type:"square root",a:functions[i].a,c:functions[i].c,k:functions[i].k,h:functions[i].h,color:functions[i].color});
+						}
+						else if(functions[i].type == "absolute value"){
+							graphFunction({type:"absolute value",a:functions[i].a,c:functions[i].c,k:functions[i].k,h:functions[i].h,color:functions[i].color});
+						}
+						else if(functions[i].type == "ellipse"){
+							graphFunction({type:"ellipse",a:functions[i].a,b:functions[i].b,r:functions[i].r,s:functions[i].s,t:functions[i].t,color:functions[i].color});
+						}
+						else if(functions[i].type == "derivative polynomial"){
+							graphFunction({type:"derivative polynomial",diffcoeffecients:functions[i].diffcoeffecients,degree:functions[i].degree,diffexponents:functions[i].diffexponents,color:functions[i].color});
+						}
+						else if(functions[i].type == "derivative rational"){
+							graphFunction({type:"derivative rational",diffcoeffecients1:functions[i].diffcoeffecients1,diffcoeffecients2:functions[i].diffcoeffecients2,degree1:functions[i].degree1,degree2:functions[i].degree2,diffexponents1:functions[i].diffexponents1,diffexponents2:functions[i].diffexponents2,color:functions[i].color});
+						}
+						else if(functions[i].type == "derivative exponential"){
+							graphFunction({type:"derivative exponential",a:functions[i].a,b:functions[i].b,c:functions[i].c,k:functions[i].k,h:functions[i].h,color:functions[i].color});
+						}
+						else if(functions[i].type == "derivative log"){
+							graphFunction({type:"derivative log",a:functions[i].a,c:functions[i].c,k:functions[i].k,h:functions[i].h,color:functions[i].color});
+						}
+						else if(functions[i].type == "derivative sin"){
+							graphFunction({type:"derivative sin",a:functions[i].a,c:functions[i].c,k:functions[i].k,h:functions[i].h,color:functions[i].color});
+						}
+						else if(functions[i].type == "derivative cos"){
+							graphFunction({type:"derivative cos",a:functions[i].a,c:functions[i].c,k:functions[i].k,h:functions[i].h,color:functions[i].color});
+						}
+						else if(functions[i].type == "derivative tan"){
+							graphFunction({type:"derivative tan",a:functions[i].a,c:functions[i].c,k:functions[i].k,h:functions[i].h,color:functions[i].color});
+						}
+						else if(functions[i].type == "derivative arcsin"){
+							graphFunction({type:"derivative arcsin",a:functions[i].a,c:functions[i].c,k:functions[i].k,h:functions[i].h,color:functions[i].color});
+						}
+						else if(functions[i].type == "derivative arccos"){
+							graphFunction({type:"derivative arccos",a:functions[i].a,c:functions[i].c,k:functions[i].k,h:functions[i].h,color:functions[i].color});
+						}
+						else if(functions[i].type == "derivative arctan"){
+							graphFunction({type:"derivative arctan",a:functions[i].a,c:functions[i].c,k:functions[i].k,h:functions[i].h,color:functions[i].color});
+						}
+						else if(functions[i].type == "derivative square root"){
+							graphFunction({type:"derivative square root",a:functions[i].a,c:functions[i].c,k:functions[i].k,h:functions[i].h,color:functions[i].color});
+						}
+						else if(functions[i].type == "integral polynomial"){
+							graphFunction({type:"integral polynomial",lowerBound:functions[i].lowerBound,anticoeffecients:functions[i].anticoeffecients,degree:functions[i].degree,antiexponents:functions[i].antiexponents,color:functions[i].color});
+						}
+						else if(functions[i].type == "integral rational"){
+							graphFunction({type:"integral rational",lowerBound:functions[i].lowerBound,degree1:functions[i].degree1,degree2:functions[i].degree2,coeffecients1:functions[i].coeffecients1,coeffecients2:functions[i].coeffecients2,exponents1:functions[i].exponents1,exponents2:functions[i].exponents2,color:functions[i].color});
+						}
+						else if(functions[i].type == "integral exponential"){
+							graphFunction({type:"integral exponential",lowerBound:functions[i].lowerBound,a:functions[i].a,b:functions[i].b,c:functions[i].c,k:functions[i].k,h:functions[i].h,color:functions[i].color});
+						}
+						else if(functions[i].type == "integral log"){
+							graphFunction({type:"integral log",lowerBound:functions[i].lowerBound,a:functions[i].a,c:functions[i].c,k:functions[i].k,h:functions[i].h,color:functions[i].color});
+						}
+						else if(functions[i].type == "integral sin"){
+							graphFunction({type:"integral sin",lowerBound:functions[i].lowerBound,a:functions[i].a,c:functions[i].c,k:functions[i].k,h:functions[i].h,color:functions[i].color});
+						}
+						else if(functions[i].type == "integral cos"){
+							graphFunction({type:"integral cos",lowerBound:functions[i].lowerBound,a:functions[i].a,c:functions[i].c,k:functions[i].k,h:functions[i].h,color:functions[i].color});
+						}
+						else if(functions[i].type == "integral tan"){
+							graphFunction({type:"integral tan",lowerBound:functions[i].lowerBound,a:functions[i].a,c:functions[i].c,k:functions[i].k,h:functions[i].h,color:functions[i].color});
+						}
+						else if(functions[i].type == "integral arcsin"){
+							graphFunction({type:"integral arcsin",lowerBound:functions[i].lowerBound,a:functions[i].a,c:functions[i].c,k:functions[i].k,h:functions[i].h,color:functions[i].color});
+						}
+						else if(functions[i].type == "integral arccos"){
+							graphFunction({type:"integral arccos",lowerBound:functions[i].lowerBound,a:functions[i].a,c:functions[i].c,k:functions[i].k,h:functions[i].h,color:functions[i].color});
+						}
+						else if(functions[i].type == "integral arctan"){
+							graphFunction({type:"integral arctan",lowerBound:functions[i].lowerBound,a:functions[i].a,c:functions[i].c,k:functions[i].k,h:functions[i].h,color:functions[i].color});
+						}
+						else if(functions[i].type == "integral square root"){
+							graphFunction({type:"integral square root",lowerBound:functions[i].lowerBound,a:functions[i].a,c:functions[i].c,k:functions[i].k,h:functions[i].h,color:functions[i].color});
+						}
+					}
+				}
+			
+			}
+			
+			function deleteFunction(id){
+						
+				response=confirm("Do you want to permanantly delete this function?");
+					
+				if(response){
+					
+					document.getElementById(id).parentNode.removeChild(document.getElementById(id));
+					
+					for(i=0;i<=functions.length-1;i++){
+						
+						if(functions[i].id == id){
+							
+							functions[i].deleted=true;
+							
+						}
+					}
+					
+					context.clearRect(0,0,canvas.width,canvas.height);
+					
+					drawGridLines();
+					
+					redrawGraphs();
+				}
+					
+			}
+				
+			function graph(){
+				
+				coeffecients=[];
+				coeffecients1=[];
+				coeffecients2=[];
+				
+				exponents=[];
+				exponents1=[];
+				exponents2=[];
+				
+				diffcoeffecients=[];
+				diffcoeffecients1=[];
+				diffcoeffecients2=[];
+				
+				diffexponents=[];
+				diffexponents1=[];
+				diffexponents2=[];
+				
+				anticoeffecients=[];
+				anticoeffecients1=[];
+				anticoeffecients2=[];
+				
+				antiexponents=[];
+				antiexponents1=[];
+				antiexponents2=[];
+				
+				if(selectBox.value == "polynomial"){
+			
+					degree = prompt("What is the degree of your polynomial?");
+					
+					if(degree == null){
+						return 0;
+					}
+					
+					else if(isNaN(degree)){
+						degree = degree.length;
+					}
+					
+					else if(!isNaN(degree)){
+						degree = parseInt(Math.abs(degree));
+					}
+					
+					
+					
+					for (i= degree; i>=0; i--){
+						coeffecient = prompt("What is the "+ i + "th coeffecient?");
+						
+						if(coeffecient == null){
+							return 0;
+						}
+						
+						else if(isNaN(coeffecient)){
+							coeffecient = coeffecient.length;
+						}
+					
+						coeffecients.push(coeffecient);
+					}
+					
+					for (exponent= degree; exponent>=0; exponent--){
+						exponents.push(exponent);
+					}
+					
+					string="";
+					
+					for(i=0;i<=exponents.length-1;i++){
+						
+						if(exponents[i] == 0 && coeffecients[i] == 0){
+							string+="";
+						}
+						
+						else if(exponents[i] == 1){
+						
+							if(coeffecients[i] > 0){
+								string+="+"+coeffecients[i]+"x";
+							}
+							else if(coeffecients[i] < 0){
+								string+="-"+coeffecients[i]+"x";
+							}
+						}
+						
+						else if(coeffecients[i] == 1 && exponents[i] !=0){
+							string+="+x^"+exponents[i];
+						}
+						
+						else if(coeffecients[i] == -1 && exponents[i] !=0){
+							string+="-x^"+exponents[i];
+						}
+						
+						else if(coeffecients[i] == 1 && exponents[i] ==0){
+							string+="+1";
+						}
+						
+						else if(coeffecients[i] == -1 && exponents[i] ==0){
+							string+="-1";
+						}
+						
+						else if(exponents[i] == 0 && coeffecients[i] != 0){
+
+							if(coeffecients[i]>0){
+								string+="+"+coeffecients[i];
+							}
+							
+							else if(coeffecients[i]<0){
+								string+="-"+Math.abs(coeffecients[i]);
+							}
+						}
+						
+						else if(exponents[i] != 0 && coeffecients[i] == 0){
+							string+="";
+						}
+						
+						
+						else {
+							if(coeffecients[i] >0){
+								string+="+"+coeffecients[i]+"x^"+exponents[i];
+							}
+							
+							else if(coeffecients[i]<0){
+								string+="-"+Math.abs(coeffecients[i])+"x^"+exponents[i];
+							}
+						}
+					}
+					
+					
+					functionsTable.innerHTML+='<tr id=\''+id.toString()+'\' >\
+											   <td>'+"polynomial"+'</td>\
+											   <td>'+string+'</td>\
+											   <td><input type="button" id="delete" value="Delete" onclick="deleteFunction(\''+id.toString()+'\')"></td>\
+											   </tr>';
+												
+					graphFunction({type:"polynomial",coeffecients:coeffecients,degree:degree,exponents:exponents,color:colorPicker.value.toString()});
+		
+					functions.push({type:"polynomial",coeffecients:coeffecients,degree:degree,exponents:exponents,color:colorPicker.value.toString(),id:id,deleted:false});
+					
+				}
+				
+				else if(selectBox.value == "rational"){
+					
+					degree1 = prompt("What is the degree of your first polynomial?");
+					
+					if(degree1 == null){
+						return 0;
+					}
+					
+					else if(isNaN(degree1)){
+						degree1 = degree1.length;
+					}
+					
+					else if(!isNaN(degree1)){
+						degree1 = parseInt(Math.abs(degree1));
+					}
+					
+					degree2 = prompt("What is the degree of your second polynomial?");
+					
+					if(degree2 == null){
+						return 0;
+					}
+					
+					else if(isNaN(degree2)){
+						degree2 = degree2.length;
+					}
+					
+					else if(!isNaN(degree2)){
+						degree2 = parseInt(Math.abs(degree2));
+					}
+					
+					
+					for (i= degree1; i>=0; i--){
+						
+						coeffecient = prompt("What is the "+ i + "th coeffecient of the first polynomial?");
+						
+						if(coeffecient == null){
+							return 0;
+						}
+						
+						else if(isNaN(coeffecient)){
+							coeffecient = coeffecient.length;
+						}
+						
+						coeffecients1.push(coeffecient);
+					}
+			
+					for (i= degree2; i>=0; i--){
+						
+						coeffecient = prompt("What is the "+ i + "th coeffecient of your second polynomial?");
+						
+						if(coeffecient == null){
+							return 0;
+						}
+						
+						else if(isNaN(coeffecient)){
+							coeffecient = coeffecient.length;
+						}
+						
+						coeffecients2.push(coeffecient);
+					}
+					
+					for (exponent= degree1; exponent>=0; exponent--){
+						exponents1.push(exponent);
+					}
+					
+					for (exponent= degree2; exponent>=0; exponent--){
+						exponents2.push(exponent);
+					}
+					
+					string="(";
+					
+					for(i=0;i<=exponents1.length-1;i++){
+						
+						if(exponents1[i] == 0 && coeffecients1[i] == 0){
+							string+="";
+						}
+						
+						else if(exponents1[i] == 1){
+						
+							if(coeffecients1[i] > 0){
+								string+="+"+coeffecients1[i]+"x";
+							}
+							else if(coeffecients1[i] < 0){
+								string+="-"+coeffecients1[i]+"x";
+							}
+						}
+						
+						else if(coeffecients1[i] == 1 && exponents1[i] !=0){
+							string+="+x^"+exponents1[i];
+						}
+						
+						else if(coeffecients1[i] == -1 && exponents1[i] !=0){
+							string+="-x^"+exponents1[i];
+						}
+						
+						else if(coeffecients1[i] == 1 && exponents1[i] ==0){
+							string+="+1";
+						}
+						
+						else if(coeffecients1[i] == -1 && exponents1[i] ==0){
+							string+="-1";
+						}
+						
+						else if(exponents1[i] == 0 && coeffecients1[i] != 0){
+
+							if(coeffecients1[i]>0){
+								string+="+"+coeffecients1[i];
+							}
+							
+							else if(coeffecients1[i]<0){
+								string+="-"+Math.abs(coeffecients1[i]);
+							}
+						}
+						
+						else if(exponents1[i] != 0 && coeffecients1[i] == 0){
+							string+="";
+						}
+						
+						
+						else {
+							if(coeffecients1[i] >0){
+								string+="+"+coeffecients1[i]+"x^"+exponents1[i];
+							}
+							
+							else if(coeffecients1[i]<0){
+								string+="-"+Math.abs(coeffecients1[i])+"x^"+exponents1[i];
+							}
+						}
+					}
+					
+					string=string.slice(1,string.length);
+					
+					string+=")/(";
+					
+					for(i=0;i<=exponents2.length-1;i++){
+						
+						if(exponents2[i] == 0 && coeffecients2[i] == 0){
+							string+="";
+						}
+						
+						else if(exponents2[i] == 1){
+						
+							if(coeffecients2[i] > 0){
+								string+="+"+coeffecients2[i]+"x";
+							}
+							else if(coeffecients2[i] < 0){
+								string+="-"+coeffecients2[i]+"x";
+							}
+						}
+						
+						else if(coeffecients2[i] == 1 && exponents2[i] !=0){
+							string+="+x^"+exponents2[i];
+						}
+						
+						else if(coeffecients2[i] == -1 && exponents2[i] !=0){
+							string+="-x^"+exponents2[i];
+						}
+						
+						else if(coeffecients2[i] == 1 && exponents2[i] ==0){
+							string+="+1";
+						}
+						
+						else if(coeffecients2[i] == -1 && exponents2[i] ==0){
+							string+="-1";
+						}
+						
+						else if(exponents2[i] == 0 && coeffecients2[i] != 0){
+
+							if(coeffecients2[i]>0){
+								string+="+"+coeffecients2[i];
+							}
+							
+							else if(coeffecients2[i]<0){
+								string+="-"+Math.abs(coeffecients2[i]);
+							}
+						}
+						
+						else if(exponents2[i] != 0 && coeffecients2[i] == 0){
+							string+="";
+						}
+						
+						
+						else {
+							if(coeffecients2[i] >0){
+								string+="+"+coeffecients1[i]+"x^"+exponents1[i];
+							}
+							
+							else if(coeffecients2[i]<0){
+								string+="-"+Math.abs(coeffecients2[i])+"x^"+exponents2[i];
+							}
+						}
+					}
+					
+					string+=")";
+				
+					functionsTable.innerHTML+='<tr id=\''+id.toString()+'\' >\
+											   <td>'+"rational"+'</td>\
+											   <td>'+string+'</td>\
+											   <td><input type="button" id="delete" value="Delete" onclick="deleteFunction(\''+id.toString()+'\')"></td>\
+											   </tr>';
+					
+					graphFunction({type:"rational",degree1:degree1,degree2:degree2,coeffecients1:coeffecients1,coeffecients2:coeffecients2,exponents1:exponents1,exponents2:exponents2,color:colorPicker.value.toString()});
+		
+					functions.push({type:"rational",degree1:degree1,degree2:degree2,coeffecients1:coeffecients1,coeffecients2:coeffecients2,exponents1:exponents1,exponents2:exponents2,color:colorPicker.value.toString(),id:id,deleted:false});
+					
+				}
+				
+				else if(selectBox.value == "exponential"){
+					
+					a = prompt("The function is in the form y=a*(b)**(k*(x+h))+c"+"\n"+"Enter the value of a");
+					
+					if(a == null){
+						return 0;
+					}
+						
+					else if(isNaN(a)){
+						a = a.length;
+					}
+					
+					b = prompt("The function is in the form y=a*(b)**(k*(x+h))+c"+"\n"+"Enter the value of b");
+					
+					if(b == null){
+						return 0;
+					}
+						
+					else if(isNaN(b)){
+						b = b.length;
+					}
+					
+					c = prompt("The function is in the form y=a*(b)**(k*(x+h))+c"+"\n"+"Enter the value of c");
+					
+					if(c == null){
+						return 0;
+					}
+						
+					else if(isNaN(c)){
+						c = c.length;
+					}
+					
+					k = prompt("The function is in the form y=a*(b)**(k*(x+h))+c"+"\n"+"Enter the value of k");
+					
+					if(k == null){
+						return 0;
+					}
+						
+					else if(isNaN(k)){
+						k = k.length;
+					}
+					
+					h = prompt("The function is in the form y=a*(b)**(k*(x+h))+c"+"\n"+"Enter the value of h");
+					
+					if(h == null){
+						return 0;
+					}
+						
+					else if(isNaN(h)){
+						h = h.length;
+					}
+					
+					string=a+"*("+b+")**("+k+"*(x+"+h+"))+"+c;
+					
+					functionsTable.innerHTML+='<tr id=\''+id.toString()+'\' >\
+											   <td>'+"exponential"+'</td>\
+											   <td>'+string+'</td>\
+											   <td><input type="button" id="delete" value="Delete" onclick="deleteFunction(\''+id.toString()+'\')"></td>\
+											   </tr>';
+											   
+					graphFunction({type:"exponential",a:a,b:b,c:c,k:k,h:h,color:colorPicker.value.toString()});
+		
+					functions.push({type:"exponential",a:a,b:b,c:c,k:k,h:h,color:colorPicker.value.toString(),id:id,deleted:false});
+					
+				
+				
+				}
+				
+				else if(selectBox.value == "log"){
+					
+					a = prompt("The function is in the form y=a*(log(k*(x+h)))+c"+"\n"+"Enter the value of a");
+					
+					if(a == null){
+						return 0;
+					}
+						
+					else if(isNaN(a)){
+						a = a.length;
+					}
+					
+					c = prompt("The function is in the form y=a*(log(k*(x+h)))+c"+"\n"+"Enter the value of c");
+					
+					if(c == null){
+						return 0;
+					}
+						
+					else if(isNaN(c)){
+						c = c.length;
+					}
+					
+					k = prompt("The function is in the form y=a*(log(k*(x+h)))+c"+"\n"+"Enter the value of k");
+					
+					if(k == null){
+						return 0;
+					}
+						
+					else if(isNaN(k)){
+						k = k.length;
+					}
+					
+					h = prompt("The function is in the form y=a*(log(k*(x+h)))+c"+"\n"+"Enter the value of h");
+					
+					if(h == null){
+						return 0;
+					}
+						
+					else if(isNaN(h)){
+						h = h.length;
+					}
+					
+					string=a+"*(log("+k+"*(x+"+h+")))+"+c;
+					
+					functionsTable.innerHTML+='<tr id=\''+id.toString()+'\' >\
+											   <td>'+"log"+'</td>\
+											   <td>'+string+'</td>\
+											   <td><input type="button" id="delete" value="Delete" onclick="deleteFunction(\''+id.toString()+'\')"></td>\
+											   </tr>';
+											   
+					graphFunction({type:"log",a:a,c:c,k:k,h:h,color:colorPicker.value.toString()});
+		
+					functions.push({type:"log",a:a,c:c,k:k,h:h,color:colorPicker.value.toString(),id:id,deleted:false});
+					
+				
+				}
+				
+				else if(selectBox.value == "sin"){
+					
+					a = prompt("The function is in the form y=a*(sin(k*(x+h)))+c"+"\n"+"Enter the value of a");
+					
+					if(a == null){
+						return 0;
+					}
+						
+					else if(isNaN(a)){
+						a = a.length;
+					}
+					
+					c = prompt("The function is in the form y=a*(sin(k*(x+h)))+c"+"\n"+"Enter the value of c");
+					
+					if(c == null){
+						return 0;
+					}
+						
+					else if(isNaN(c)){
+						c = c.length;
+					}
+					
+					k = prompt("The function is in the form y=a*(sin(k*(x+h)))+c"+"\n"+"Enter the value of k");
+					
+					if(k == null){
+						return 0;
+					}
+						
+					else if(isNaN(k)){
+						k = k.length;
+					}
+					
+					h = prompt("The function is in the form y=a*(sin(k*(x+h)))+c"+"\n"+"Enter the value of h");
+					
+					if(h == null){
+						return 0;
+					}
+						
+					else if(isNaN(h)){
+						h = h.length;
+					}
+					
+					string=a+"*(sin("+k+"*(x+"+h+")))+"+c;
+					
+					functionsTable.innerHTML+='<tr id=\''+id.toString()+'\' >\
+											   <td>'+"sin"+'</td>\
+											   <td>'+string+'</td>\
+											   <td><input type="button" id="delete" value="Delete" onclick="deleteFunction(\''+id.toString()+'\')"></td>\
+											   </tr>';
+											 
+					graphFunction({type:"sin",a:a,c:c,k:k,h:h,color:colorPicker.value.toString()});
+		
+					functions.push({type:"sin",a:a,c:c,k:k,h:h,color:colorPicker.value.toString(),id:id,deleted:false});
+					
+			
+				
+				}
+				
+				else if(selectBox.value == "cos"){
+					
+					a = prompt("The function is in the form y=a*(cos(k*(x+h)))+c"+"\n"+"Enter the value of a");
+					
+					if(a == null){
+						return 0;
+					}
+						
+					else if(isNaN(a)){
+						a = a.length;
+					}
+					
+					c = prompt("The function is in the form y=a*(cos(k*(x+h)))+c"+"\n"+"Enter the value of c");
+					
+					if(c == null){
+						return 0;
+					}
+						
+					else if(isNaN(c)){
+						c = c.length;
+					}
+					
+					k = prompt("The function is in the form y=a*(cos(k*(x+h)))+c"+"\n"+"Enter the value of k");
+					
+					if(k == null){
+						return 0;
+					}
+						
+					else if(isNaN(k)){
+						k = k.length;
+					}
+					
+					h = prompt("The function is in the form y=a*(cos(k*(x+h)))+c"+"\n"+"Enter the value of h");
+					
+					if(h == null){
+						return 0;
+					}
+						
+					else if(isNaN(h)){
+						h = h.length;
+					}
+					
+					string=a+"*(cos("+k+"*(x+"+h+")))+"+c;
+					
+					functionsTable.innerHTML+='<tr id=\''+id.toString()+'\' >\
+											   <td>'+"cos"+'</td>\
+											   <td>'+string+'</td>\
+											   <td><input type="button" id="delete" value="Delete" onclick="deleteFunction(\''+id.toString()+'\')"></td>\
+											   </tr>';
+											   
+					graphFunction({type:"cos",a:a,c:c,k:k,h:h,color:colorPicker.value.toString()});
+		
+					functions.push({type:"cos",a:a,c:c,k:k,h:h,color:colorPicker.value.toString(),id:id,deleted:false});
+					
+					
+				
+				}
+				
+				else if(selectBox.value == "tan"){
+					
+					a = prompt("The function is in the form y=a*(tan(k*(x+h)))+c"+"\n"+"Enter the value of a");
+					
+					if(a == null){
+						return 0;
+					}
+						
+					else if(isNaN(a)){
+						a = a.length;
+					}
+					
+					c = prompt("The function is in the form y=a*(tan(k*(x+h)))+c"+"\n"+"Enter the value of c");
+					
+					if(c == null){
+						return 0;
+					}
+						
+					else if(isNaN(c)){
+						c = c.length;
+					}
+					
+					k = prompt("The function is in the form y=a*(tan(k*(x+h)))+c"+"\n"+"Enter the value of k");
+					
+					if(k == null){
+						return 0;
+					}
+						
+					else if(isNaN(k)){
+						k = k.length;
+					}
+					
+					h = prompt("The function is in the form y=a*(tan(k*(x+h)))+c"+"\n"+"Enter the value of h");
+					
+					if(h == null){
+						return 0;
+					}
+						
+					else if(isNaN(h)){
+						h = h.length;
+					}
+					
+					string=a+"*(tan("+k+"*(x+"+h+")))+"+c;
+					
+					functionsTable.innerHTML+='<tr id=\''+id.toString()+'\' >\
+											   <td>'+"tan"+'</td>\
+											   <td>'+string+'</td>\
+											   <td><input type="button" id="delete" value="Delete" onclick="deleteFunction(\''+id.toString()+'\')"></td>\
+											   </tr>';
+											   
+					graphFunction({type:"tan",a:a,c:c,k:k,h:h,color:colorPicker.value.toString()});
+		
+					functions.push({type:"tan",a:a,c:c,k:k,h:h,color:colorPicker.value.toString(),id:id,deleted:false});
+				
+				}
+				
+				else if(selectBox.value == "csc"){
+					
+					a = prompt("The function is in the form y=a*(csc(k*(x+h)))+c"+"\n"+"Enter the value of a");
+					
+					if(a == null){
+						return 0;
+					}
+						
+					else if(isNaN(a)){
+						a = a.length;
+					}
+					
+					c = prompt("The function is in the form y=a*(csc(k*(x+h)))+c"+"\n"+"Enter the value of c");
+					
+					if(c == null){
+						return 0;
+					}
+						
+					else if(isNaN(c)){
+						c = c.length;
+					}
+					
+					k = prompt("The function is in the form y=a*(csc(k*(x+h)))+c"+"\n"+"Enter the value of k");
+					
+					if(k == null){
+						return 0;
+					}
+						
+					else if(isNaN(k)){
+						k = k.length;
+					}
+					
+					h = prompt("The function is in the form y=a*(csc(k*(x+h)))+c"+"\n"+"Enter the value of h");
+					
+					if(h == null){
+						return 0;
+					}
+						
+					else if(isNaN(h)){
+						h = h.length;
+					}
+					
+					string=a+"*(csc("+k+"*(x+"+h+")))+"+c;
+					
+					functionsTable.innerHTML+='<tr id=\''+id.toString()+'\' >\
+											   <td>'+"csc"+'</td>\
+											   <td>'+string+'</td>\
+											   <td><input type="button" id="delete" value="Delete" onclick="deleteFunction(\''+id.toString()+'\')"></td>\
+											   </tr>';
+											   
+					graphFunction({type:"csc",a:a,c:c,k:k,h:h,color:colorPicker.value.toString()});
+		
+					functions.push({type:"csc",a:a,c:c,k:k,h:h,color:colorPicker.value.toString(),id:id,deleted:false});
+				
+				}
+				
+				else if(selectBox.value == "sec"){
+					
+					a = prompt("The function is in the form y=a*(sec(k*(x+h)))+c"+"\n"+"Enter the value of a");
+					
+					if(a == null){
+						return 0;
+					}
+						
+					else if(isNaN(a)){
+						a = a.length;
+					}
+					
+					c = prompt("The function is in the form y=a*(sec(k*(x+h)))+c"+"\n"+"Enter the value of c");
+					
+					if(c == null){
+						return 0;
+					}
+						
+					else if(isNaN(c)){
+						c = c.length;
+					}
+					
+					k = prompt("The function is in the form y=a*(sec(k*(x+h)))+c"+"\n"+"Enter the value of k");
+					
+					if(k == null){
+						return 0;
+					}
+						
+					else if(isNaN(k)){
+						k = k.length;
+					}
+					
+					h = prompt("The function is in the form y=a*(sec(k*(x+h)))+c"+"\n"+"Enter the value of h");
+					
+					if(h == null){
+						return 0;
+					}
+						
+					else if(isNaN(h)){
+						h = h.length;
+					}
+					
+					string=a+"*(sec("+k+"*(x+"+h+")))+"+c;
+					
+					functionsTable.innerHTML+='<tr id=\''+id.toString()+'\' >\
+											   <td>'+"sec"+'</td>\
+											   <td>'+string+'</td>\
+											   <td><input type="button" id="delete" value="Delete" onclick="deleteFunction(\''+id.toString()+'\')"></td>\
+											   </tr>';
+											   
+					graphFunction({type:"sec",a:a,c:c,k:k,h:h,color:colorPicker.value.toString()});
+		
+					functions.push({type:"sec",a:a,c:c,k:k,h:h,color:colorPicker.value.toString(),id:id,deleted:false});
+				
+				}
+				
+				else if(selectBox.value == "cot"){
+					
+					a = prompt("The function is in the form y=a*(cot(k*(x+h)))+c"+"\n"+"Enter the value of a");
+					
+					if(a == null){
+						return 0;
+					}
+						
+					else if(isNaN(a)){
+						a = a.length;
+					}
+					
+					c = prompt("The function is in the form y=a*(cot(k*(x+h)))+c"+"\n"+"Enter the value of c");
+					
+					if(c == null){
+						return 0;
+					}
+						
+					else if(isNaN(c)){
+						c = c.length;
+					}
+					
+					k = prompt("The function is in the form y=a*(cot(k*(x+h)))+c"+"\n"+"Enter the value of k");
+					
+					if(k == null){
+						return 0;
+					}
+						
+					else if(isNaN(k)){
+						k = k.length;
+					}
+					
+					h = prompt("The function is in the form y=a*(cot(k*(x+h)))+c"+"\n"+"Enter the value of h");
+					
+					if(h == null){
+						return 0;
+					}
+						
+					else if(isNaN(h)){
+						h = h.length;
+					}
+					
+					string=a+"*(cot("+k+"*(x+"+h+")))+"+c;
+					
+					functionsTable.innerHTML+='<tr id=\''+id.toString()+'\' >\
+											   <td>'+"cot"+'</td>\
+											   <td>'+string+'</td>\
+											   <td><input type="button" id="delete" value="Delete" onclick="deleteFunction(\''+id.toString()+'\')"></td>\
+											   </tr>';
+											   
+					graphFunction({type:"cot",a:a,c:c,k:k,h:h,color:colorPicker.value.toString()});
+		
+					functions.push({type:"cot",a:a,c:c,k:k,h:h,color:colorPicker.value.toString(),id:id,deleted:false});
+				
+				}
+				
+				else if(selectBox.value == "arcsin"){
+					
+					a = prompt("The function is in the form y=a*(arcsin(k*(x+h)))+c"+"\n"+"Enter the value of a");
+					
+					if(a == null){
+						return 0;
+					}
+						
+					else if(isNaN(a)){
+						a = a.length;
+					}
+					
+					c = prompt("The function is in the form y=a*(arcsin(k*(x+h)))+c"+"\n"+"Enter the value of c");
+					
+					if(c == null){
+						return 0;
+					}
+						
+					else if(isNaN(c)){
+						c = c.length;
+					}
+					
+					k = prompt("The function is in the form y=a*(arcsin(k*(x+h)))+c"+"\n"+"Enter the value of k");
+					
+					if(k == null){
+						return 0;
+					}
+						
+					else if(isNaN(k)){
+						k = k.length;
+					}
+					
+					h = prompt("The function is in the form y=a*(arcsin(k*(x+h)))+c"+"\n"+"Enter the value of h");
+					
+					if(h == null){
+						return 0;
+					}
+						
+					else if(isNaN(h)){
+						h = h.length;
+					}
+					
+					string=a+"*(arcsin("+k+"*(x+"+h+")))+"+c;
+					
+					functionsTable.innerHTML+='<tr id=\''+id.toString()+'\' >\
+											   <td>'+"arcsin"+'</td>\
+											   <td>'+string+'</td>\
+											   <td><input type="button" id="delete" value="Delete" onclick="deleteFunction(\''+id.toString()+'\')"></td>\
+											   </tr>';
+											   
+					graphFunction({type:"arcsin",a:a,c:c,k:k,h:h,color:colorPicker.value.toString()});
+		
+					functions.push({type:"arcsin",a:a,c:c,k:k,h:h,color:colorPicker.value.toString(),id:id,deleted:false});
+				}
+				
+				else if(selectBox.value == "arccos"){
+					
+					a = prompt("The function is in the form y=a*(arccos(k*(x+h)))+c"+"\n"+"Enter the value of a");
+					
+					if(a == null){
+						return 0;
+					}
+						
+					else if(isNaN(a)){
+						a = a.length;
+					}
+					
+					c = prompt("The function is in the form y=a*(arccos(k*(x+h)))+c"+"\n"+"Enter the value of c");
+					
+					if(c == null){
+						return 0;
+					}
+						
+					else if(isNaN(c)){
+						c = c.length;
+					}
+					
+					k = prompt("The function is in the form y=a*(arccos(k*(x+h)))+c"+"\n"+"Enter the value of k");
+					
+					if(k == null){
+						return 0;
+					}
+						
+					else if(isNaN(k)){
+						k = k.length;
+					}
+					
+					h = prompt("The function is in the form y=a*(arccos(k*(x+h)))+c"+"\n"+"Enter the value of h");
+					
+					if(h == null){
+						return 0;
+					}
+						
+					else if(isNaN(h)){
+						h = h.length;
+					}
+					
+					string=a+"*(arccos("+k+"*(x+"+h+")))+"+c;
+					
+					functionsTable.innerHTML+='<tr id=\''+id.toString()+'\' >\
+											   <td>'+"arccos"+'</td>\
+											   <td>'+string+'</td>\
+											   <td><input type="button" id="delete" value="Delete" onclick="deleteFunction(\''+id.toString()+'\')"></td>\
+											   </tr>';
+											   
+					graphFunction({type:"arccos",a:a,c:c,k:k,h:h,color:colorPicker.value.toString()});
+		
+					functions.push({type:"arccos",a:a,c:c,k:k,h:h,color:colorPicker.value.toString(),id:id,deleted:false});
+				}
+				
+				else if(selectBox.value == "arctan"){
+					
+					a = prompt("The function is in the form y=a*(arctan(k*(x+h)))+c"+"\n"+"Enter the value of a");
+					
+					if(a == null){
+						return 0;
+					}
+						
+					else if(isNaN(a)){
+						a = a.length;
+					}
+					
+					c = prompt("The function is in the form y=a*(arctan(k*(x+h)))+c"+"\n"+"Enter the value of c");
+					
+					if(c == null){
+						return 0;
+					}
+						
+					else if(isNaN(c)){
+						c = c.length;
+					}
+					
+					k = prompt("The function is in the form y=a*(arctan(k*(x+h)))+c"+"\n"+"Enter the value of k");
+					
+					if(k == null){
+						return 0;
+					}
+						
+					else if(isNaN(k)){
+						k = k.length;
+					}
+					
+					h = prompt("The function is in the form y=a*(arctan(k*(x+h)))+c"+"\n"+"Enter the value of h");
+					
+					if(h == null){
+						return 0;
+					}
+						
+					else if(isNaN(h)){
+						h = h.length;
+					}
+					
+					string=a+"*(arctan("+k+"*(x+"+h+")))+"+c;
+					
+					functionsTable.innerHTML+='<tr id=\''+id.toString()+'\' >\
+											   <td>'+"arctan"+'</td>\
+											   <td>'+string+'</td>\
+											   <td><input type="button" id="delete" value="Delete" onclick="deleteFunction(\''+id.toString()+'\')"></td>\
+											   </tr>';
+											   
+					graphFunction({type:"arctan",a:a,c:c,k:k,h:h,color:colorPicker.value.toString()});
+		
+					functions.push({type:"arctan",a:a,c:c,k:k,h:h,color:colorPicker.value.toString(),id:id,deleted:false});
+					
+					id++;
+				}
+				
+				else if(selectBox.value == "square root"){
+					
+					a = prompt("The function is in the form y=a*(sqrt(k*(x+h)))+c"+"\n"+"Enter the value of a");
+					
+					if(a == null){
+						return 0;
+					}
+						
+					else if(isNaN(a)){
+						a = a.length;
+					}
+					
+					c = prompt("The function is in the form y=a*(sqrt(k*(x+h)))+c"+"\n"+"Enter the value of c");
+					
+					if(c == null){
+						return 0;
+					}
+						
+					else if(isNaN(c)){
+						c = c.length;
+					}
+					
+					k = prompt("The function is in the form y=a*(sqrt(k*(x+h)))+c"+"\n"+"Enter the value of k");
+					
+					if(k == null){
+						return 0;
+					}
+						
+					else if(isNaN(k)){
+						k = k.length;
+					}
+					
+					h = prompt("The function is in the form y=a*(sqrt(k*(x+h)))+c"+"\n"+"Enter the value of h");
+					
+					if(h == null){
+						return 0;
+					}
+						
+					else if(isNaN(h)){
+						h = h.length;
+					}
+					
+					string=a+"*(sqrt("+k+"*(x+"+h+")))+"+c;
+					
+					functionsTable.innerHTML+='<tr id=\''+id.toString()+'\' >\
+											   <td>'+"square root"+'</td>\
+											   <td>'+string+'</td>\
+											   <td><input type="button" id="delete" value="Delete" onclick="deleteFunction(\''+id.toString()+'\')"></td>\
+											   </tr>';
+											   
+					graphFunction({type:"square root",a:a,c:c,k:k,h:h,color:colorPicker.value.toString()});
+		
+					functions.push({type:"square root",a:a,c:c,k:k,h:h,color:colorPicker.value.toString(),id:id,deleted:false});
+				
+				}
+				
+				else if(selectBox.value == "absolute value"){
+						
+					a = prompt("The function is in the form y=a*(abs(k*(x+h)))+c"+"\n"+"Enter the value of a");
+					
+					if(a == null){
+						return 0;
+					}
+						
+					else if(isNaN(a)){
+						a = a.length;
+					}
+					
+					c = prompt("The function is in the form y=a*(abs(k*(x+h)))+c"+"\n"+"Enter the value of c");
+					
+					if(c == null){
+						return 0;
+					}
+						
+					else if(isNaN(c)){
+						c = c.length;
+					}
+					
+					k = prompt("The function is in the form y=a*(abs(k*(x+h)))+c"+"\n"+"Enter the value of k");
+					
+					if(k == null){
+						return 0;
+					}
+						
+					else if(isNaN(k)){
+						k = k.length;
+					}
+					
+					h = prompt("The function is in the form y=a*(abs(k*(x+h)))+c"+"\n"+"Enter the value of h");
+					
+					if(h == null){
+						return 0;
+					}
+						
+					else if(isNaN(h)){
+						h = h.length;
+					}
+					
+					string=a+"*(abs("+k+"*(x+"+h+")))+"+c;
+					
+					functionsTable.innerHTML+='<tr id=\''+id.toString()+'\' >\
+											   <td>'+"absolute value"+'</td>\
+											   <td>'+string+'</td>\
+											   <td><input type="button" id="delete" value="Delete" onclick="deleteFunction(\''+id.toString()+'\')"></td>\
+											   </tr>';
+											   
+					graphFunction({type:"absolute value",a:a,c:c,k:k,h:h,color:colorPicker.value.toString()});
+		
+					functions.push({type:"absolute value",a:a,c:c,k:k,h:h,color:colorPicker.value.toString(),id:id,deleted:false});
+				
+				}
+				
+				else if(selectBox.value == "ellipse"){
+					
+		
+					a = prompt("The function is in the form a(x-s)**2 +b(y-t)**2 =r**2"+"\n"+"Enter the value of a");
+					
+					if(a == null){
+						return 0;
+					}
+						
+					else if(isNaN(a)){
+						a = a.length;
+					}
+					
+					b = prompt("The function is in the form a(x-s)**2 +b(y-t)**2 =r**2"+"\n"+"Enter the value of b")
+					
+					if(b == null){
+						return 0;
+					}
+						
+					else if(isNaN(b)){
+						b = b.length;
+					}
+					
+					r = prompt("The function is in the form a(x-s)**2 +b(y-t)**2 =r**2"+"\n"+"Enter the value of r");
+					
+					if(r == null){
+						return 0;
+					}
+						
+					else if(isNaN(r)){
+						r = r.length;
+					}
+					
+					s = prompt("The function is in the form a(x-s)**2 +b(y-t)**2 =r**2"+"\n"+"Enter the value of s");
+					
+					if(s == null){
+						return 0;
+					}
+						
+					else if(isNaN(s)){
+						s = s.length;
+					}
+					
+					t = prompt("The function is in the form a(x-s)**2 +b(y-t)**2 =r**2"+"\n"+"Enter the value of t");
+					
+					if(t == null){
+						return 0;
+					}
+						
+					else if(isNaN(t)){
+						t = t.length;
+					}
+					
+					string = a+"*(x-"+s+")**2 +"+b+"(y-"+t+")**2 ="+r+"**2";
+					
+					functionsTable.innerHTML+='<tr id=\''+id.toString()+'\' >\
+											   <td>'+"ellipse"+'</td>\
+											   <td>'+string+'</td>\
+											   <td><input type="button" id="delete" value="Delete" onclick="deleteFunction(\''+id.toString()+'\')"></td>\
+											   </tr>';
+
+					graphFunction({type:"ellipse",a:a,b:b,r:r,s:s,t:t,color:colorPicker.value.toString()});
+		
+					functions.push({type:"ellipse",a:a,b:b,r:r,s:s,t:t,color:colorPicker.value.toString(),id:id,deleted:false});
+					
+				
+				}
+				
+				else if(selectBox.value == "derivative polynomial"){
+					
+						degree = prompt("What is the degree of your polynomial?");
+					
+						if(degree == null){
+							return 0;
+						}
+						
+						else if(isNaN(degree)){
+							degree = degree.length;
+						}
+						
+						else if(!isNaN(degree)){
+							degree = parseInt(Math.abs(degree));
+						}
+					
+					for (i= degree; i>=0; i--){
+						coeffecient = prompt("What is the "+ i + "th coeffecient");
+						
+						if(coeffecient == null){
+							return 0;
+						}
+						
+						else if(isNaN(coeffecient)){
+							coeffecient = coeffecient.length;
+						}
+						
+						coeffecients.push(coeffecient);
+					}
+					
+					for (exponent= degree; exponent>=0; exponent--){
+						exponents.push(exponent);
+					}
+					
+					for (i=0; i<=degree;i++){
+						diffcoeffecients.push(coeffecients[i]*exponents[i]);
+						diffexponents.push(exponents[i]-1);
+					}
+					
+					diffcoeffecients[diffcoeffecients.length-1] = 0;
+					
+					
+					string="";
+					
+					for(i=0;i<=exponents.length-1;i++){
+						
+						if(exponents[i] == 0 && coeffecients[i] == 0){
+							string+="";
+						}
+						
+						else if(exponents[i] == 1){
+						
+							if(coeffecients[i] > 0){
+								string+="+"+coeffecients[i]+"x";
+							}
+							else if(coeffecients[i] < 0){
+								string+="-"+coeffecients[i]+"x";
+							}
+						}
+						
+						else if(coeffecients[i] == 1 && exponents[i] !=0){
+							string+="+x^"+exponents[i];
+						}
+						
+						else if(coeffecients[i] == -1 && exponents[i] !=0){
+							string+="-x^"+exponents[i];
+						}
+						
+						else if(coeffecients[i] == 1 && exponents[i] ==0){
+							string+="+1";
+						}
+						
+						else if(coeffecients[i] == -1 && exponents[i] ==0){
+							string+="-1";
+						}
+						
+						else if(exponents[i] == 0 && coeffecients[i] != 0){
+
+							if(coeffecients[i]>0){
+								string+="+"+coeffecients[i];
+							}
+							
+							else if(coeffecients[i]<0){
+								string+="-"+Math.abs(coeffecients[i]);
+							}
+						}
+						
+						else if(exponents[i] != 0 && coeffecients[i] == 0){
+							string+="";
+						}
+						
+						
+						else {
+							if(coeffecients[i] >0){
+								string+="+"+coeffecients[i]+"x^"+exponents[i];
+							}
+							
+							else if(coeffecients1[i]<0){
+								string+="-"+Math.abs(coeffecients[i])+"x^"+exponents[i];
+							}
+						}
+					}
+					
+					string=string.slice(1,string.length);
+					
+					functionsTable.innerHTML+='<tr id=\''+id.toString()+'\' >\
+											   <td>'+"derivative polynomial"+'</td>\
+											   <td>'+string+'</td>\
+											   <td><input type="button" id="delete" value="Delete" onclick="deleteFunction(\''+id.toString()+'\')"></td>\
+											   </tr>';
+											   
+					graphFunction({type:"derivative polynomial",diffcoeffecients:diffcoeffecients,degree:degree,diffexponents:diffexponents,color:colorPicker.value.toString()});
+		
+					functions.push({type:"derivative polynomial",diffcoeffecients:diffcoeffecients,degree:degree,diffexponents:diffexponents,color:colorPicker.value.toString(),id:id,deleted:false});
+					
+				}
+				
+				else if(selectBox.value == "derivative rational"){
+					
+					degree1 = prompt("What is the degree of your first polynomial?");
+					
+					if(degree1 == null){
+						return 0;
+					}
+					
+					else if(isNaN(degree1)){
+						degree1 = degree1.length;
+					}
+					
+					else if(!isNaN(degree1)){
+						degree1 = parseInt(Math.abs(degree1));
+					}
+					
+					degree2 = prompt("What is the degree of your second polynomial?");
+					
+					if(degree2 == null){
+						return 0;
+					}
+					
+					else if(isNaN(degree2)){
+						degree2 = degree2.length;
+					}
+					
+					else if(!isNaN(degree2)){
+						degree2 = parseInt(Math.abs(degree2));
+					}
+					
+					for (i= degree1; i>=0; i--){
+					
+						coeffecient = prompt("What is the "+ i +" th coeffecient of your first polynomial?");
+						
+						if(coeffecient == null){
+							return 0;
+						}
+					
+						else if(isNaN(coeffecient)){
+							coeffecient = coeffecient.length;
+						}
+						
+						diffcoeffecients1.push(coeffecient);
+					}
+					
+					for (i= degree2; i>=0; i--){
+						coeffecient = prompt("What is the "+ i +" th coeffecient of your second polynomial?");
+						
+						if(coeffecient == null){
+							return 0;
+						}
+					
+						else if(isNaN(coeffecient)){
+							coeffecient = coeffecient.length;
+						}
+						
+						diffcoeffecients2.push(coeffecient);
+						
+					}
+			
+	
+		
+					for (exponent= degree1; exponent>=0; exponent--){
+						diffexponents1.push(exponent);
+						
+					}
+					
+					for (exponent= degree2; exponent>=0; exponent--){
+						diffexponents2.push(exponent);
+					}
+					
+					diffcoeffecients1[diffcoeffecients1.length-1] = 0;
+					diffcoeffecients2[diffcoeffecients2.length-1] = 0;
+					
+					string="(";
+					
+					for(i=0;i<=diffexponents1.length-1;i++){
+						
+						if(diffexponents1[i] == 0 && diffcoeffecients1[i] == 0){
+							string+="";
+						}
+						
+						else if(diffexponents1[i] == 1){
+						
+							if(diffcoeffecients1[i] > 0){
+								string+="+"+diffcoeffecients1[i]+"x";
+							}
+							else if(diffcoeffecients1[i] < 0){
+								string+="-"+diffcoeffecients1[i]+"x";
+							}
+						}
+						
+						else if(diffcoeffecients1[i] == 1 && diffexponents1[i] !=0){
+							string+="+x^"+diffexponents1[i];
+						}
+						
+						else if(diffcoeffecients1[i] == -1 && diffexponents1[i] !=0){
+							string+="-x^"+diffexponents1[i];
+						}
+						
+						else if(diffcoeffecients1[i] == 1 && diffexponents1[i] ==0){
+							string+="+1";
+						}
+						
+						else if(diffcoeffecients1[i] == -1 && diffexponents1[i] ==0){
+							string+="-1";
+						}
+						
+						else if(diffexponents1[i] == 0 && diffcoeffecients1[i] != 0){
+
+							if(diffcoeffecients1[i]>0){
+								string+="+"+diffcoeffecients1[i];
+							}
+							
+							else if(diffcoeffecients1[i]<0){
+								string+="-"+Math.abs(diffcoeffecients1[i]);
+							}
+						}
+						
+						else if(diffexponents1[i] != 0 && diffcoeffecients1[i] == 0){
+							string+="";
+						}
+						
+						
+						else {
+							if(diffcoeffecients1[i] >0){
+								string+="+"+diffcoeffecients1[i]+"x^"+diffexponents1[i];
+							}
+							
+							else if(diffcoeffecients1[i]<0){
+								string+="-"+Math.abs(diffcoeffecients1[i])+"x^"+diffexponents1[i];
+							}
+						}
+					}
+					
+					string+=")/(";
+					
+					for(i=0;i<=diffexponents2.length-1;i++){
+						
+						if(diffexponents2[i] == 0 && diffcoeffecients2[i] == 0){
+							string+="";
+						}
+						
+						else if(diffexponents2[i] == 1){
+						
+							if(diffcoeffecients2[i] > 0){
+								string+="+"+diffcoeffecients2[i]+"x";
+							}
+							else if(diffcoeffecients2[i] < 0){
+								string+="-"+diffcoeffecients2[i]+"x";
+							}
+						}
+						
+						else if(diffcoeffecients2[i] == 1 && diffexponents2[i] !=0){
+							string+="+x^"+diffexponents1[i];
+						}
+						
+						else if(diffcoeffecients2[i] == -1 && diffexponents2[i] !=0){
+							string+="-x^"+diffexponents1[i];
+						}
+						
+						else if(diffcoeffecients2[i] == 1 && diffexponents2[i] ==0){
+							string+="+1";
+						}
+						
+						else if(diffcoeffecients2[i] == -1 && diffexponents2[i] ==0){
+							string+="-1";
+						}
+						
+						else if(diffexponents2[i] == 0 && diffcoeffecients2[i] != 0){
+
+							if(diffcoeffecients2[i]>0){
+								string+="+"+diffcoeffecients2[i];
+							}
+							
+							else if(diffcoeffecients2[i]<0){
+								string+="-"+Math.abs(diffcoeffecients2[i]);
+							}
+						}
+						
+						else if(diffexponents2[i] != 0 && diffcoeffecients2[i] == 0){
+							string+="";
+						}
+						
+						
+						else {
+							if(diffcoeffecients2[i] >0){
+								string+="+"+diffcoeffecients2[i]+"x^"+diffexponents2[i];
+							}
+							
+							else if(diffcoeffecients2[i]<0){
+								string+="-"+Math.abs(diffcoeffecients2[i])+"x^"+diffexponents2[i];
+							}
+						}
+					}
+					
+					string+=")";
+					
+					functionsTable.innerHTML+='<tr id=\''+id.toString()+'\' >\
+											   <td>'+"derivative rational"+'</td>\
+											   <td>'+string+'</td>\
+											   <td><input type="button" id="delete" value="Delete" onclick="deleteFunction(\''+id.toString()+'\')"></td>\
+											   </tr>';
+											   
+					graphFunction({type:"derivative rational",degree1:degree1,degree2:degree2,diffcoeffecients1:diffcoeffecients1,diffcoeffecients2:diffcoeffecients2,diffexponents1:diffexponents1,diffexponents2:diffexponents2,color:colorPicker.value.toString()});
+		
+					functions.push({type:"derivative rational",degree1:degree1,degree2:degree2,diffcoeffecients1:diffcoeffecients1,diffcoeffecients2:diffcoeffecients2,diffexponents1:diffexponents1,diffexponents2:diffexponents2,color:colorPicker.value.toString(),id:id,deleted:false});
+					
+				}
+				
+		
+					
+				else if(selectBox.value == "derivative exponential"){
+					
+					a = prompt("The function is in the form y=a*(b)**(k*(x+h))+c"+"\n"+"Enter the value of a");
+					
+					if(a == null){
+						return 0;
+					}
+						
+					else if(isNaN(a)){
+						a = a.length;
+					}
+					
+					b = prompt("The function is in the form y=a*(b)**(k*(x+h))+c"+"\n"+"Enter the value of b");
+					
+					if(b == null){
+						return 0;
+					}
+						
+					else if(isNaN(b)){
+						b = b.length;
+					}
+					
+					c = prompt("The function is in the form y=a*(b)**(k*(x+h))+c"+"\n"+"Enter the value of c");
+					
+					if(c == null){
+						return 0;
+					}
+						
+					else if(isNaN(c)){
+						c = c.length;
+					}
+					
+					k = prompt("The function is in the form y=a*(b)**(k*(x+h))+c"+"\n"+"Enter the value of k");
+					
+					if(k == null){
+						return 0;
+					}
+						
+					else if(isNaN(k)){
+						k = k.length;
+					}
+					
+					h = prompt("The function is in the form y=a*(b)**(k*(x+h))+c"+"\n"+"Enter the value of h");
+					
+					if(h == null){
+						return 0;
+					}
+						
+					else if(isNaN(h)){
+						h = h.length;
+					}
+					
+					string = a+"*("+b+")**("+k+"*(x+"+h+"))+"+c;
+					
+					functionsTable.innerHTML+='<tr id=\''+id.toString()+'\' >\
+											   <td>'+"derivative exponential"+'</td>\
+											   <td>'+string+'</td>\
+											   <td><input type="button" id="delete" value="Delete" onclick="deleteFunction(\''+id.toString()+'\')"></td>\
+											   </tr>';
+											   
+					graphFunction({type:"derivative exponential",a:a,b:b,c:c,k:k,h:h,color:colorPicker.value.toString()});
+		
+					functions.push({type:"derivative exponential",a:a,b:b,c:c,k:k,h:h,color:colorPicker.value.toString(),id:id,deleted:false});
+				
+				
+				}
+				
+				else if(selectBox.value == "derivative log"){
+					
+					a = prompt("The function is in the form y=a*(log(k*(x+h)))+c"+"\n"+"Enter the value of a");
+					
+					if(a == null){
+						return 0;
+					}
+						
+					else if(isNaN(a)){
+						a = a.length;
+					}
+					
+					c = prompt("The function is in the form y=a*(log(k*(x+h)))+c"+"\n"+"Enter the value of c");
+					
+					if(c == null){
+						return 0;
+					}
+						
+					else if(isNaN(c)){
+						c = c.length;
+					}
+					
+					k = prompt("The function is in the form y=a*(log(k*(x+h)))+c"+"\n"+"Enter the value of k");
+					
+					if(k == null){
+						return 0;
+					}
+						
+					else if(isNaN(k)){
+						k = k.length;
+					}
+					
+					h = prompt("The function is in the form y=a*(log(k*(x+h)))+c"+"\n"+"Enter the value of h");
+					
+					if(h == null){
+						return 0;
+					}
+						
+					else if(isNaN(h)){
+						h = h.length;
+					}
+					
+					string = a+"*(log("+k+"*(x+"+h+")))+"+c;
+					
+					functionsTable.innerHTML+='<tr id=\''+id.toString()+'\' >\
+											   <td>'+"log"+'</td>\
+											   <td>'+string+'</td>\
+											   <td><input type="button" id="delete" value="Delete" onclick="deleteFunction(\''+id.toString()+'\')"></td>\
+											   </tr>';
+											   
+					graphFunction({type:"derivative log",a:a,c:c,k:k,h:h,color:colorPicker.value.toString()});
+		
+					functions.push({type:"derivative log",a:a,c:c,k:k,h:h,color:colorPicker.value.toString(),id:id,deleted:false});
+				}
+				
+				else if(selectBox.value == "derivative sin"){
+					
+					a = prompt("The function is in the form y=a*(cos(k*(x+h)))+c"+"\n"+"Enter the value of a");
+					
+					if(a == null){
+						return 0;
+					}
+						
+					else if(isNaN(a)){
+						a = a.length;
+					}
+					
+					c = prompt("The function is in the form y=a*(sin(k*(x+h)))+c"+"\n"+"Enter the value of c");
+					
+					if(c == null){
+						return 0;
+					}
+						
+					else if(isNaN(c)){
+						c = c.length;
+					}
+					
+					k = prompt("The function is in the form y=a*(sin(k*(x+h)))+c"+"\n"+"Enter the value of k");
+					
+					if(k == null){
+						return 0;
+					}
+						
+					else if(isNaN(k)){
+						k = k.length;
+					}
+					
+					h = prompt("The function is in the form y=a*(sin(k*(x+h)))+c"+"\n"+"Enter the value of h");
+					
+					if(h == null){
+						return 0;
+					}
+						
+					else if(isNaN(h)){
+						h = h.length;
+					}
+					
+					string = a+"*(sin("+k+"*(x+"+h+")))+"+c;
+					
+					functionsTable.innerHTML+='<tr id=\''+id.toString()+'\' >\
+											   <td>'+"derivative sin"+'</td>\
+											   <td>'+string+'</td>\
+											   <td><input type="button" id="delete" value="Delete" onclick="deleteFunction(\''+id.toString()+'\')"></td>\
+											   </tr>';
+											   
+					graphFunction({type:"derivative sin",a:a,c:c,k:k,h:h,color:colorPicker.value.toString()});
+		
+					functions.push({type:"derivative sin",a:a,c:c,k:k,h:h,color:colorPicker.value.toString(),id:id,deleted:false});
+				
+				}
+				
+				else if(selectBox.value == "derivative cos"){
+					
+					a = prompt("The function is in the form y=a*(cos(k*(x+h)))+c"+"\n"+"Enter the value of a");
+					
+					if(a == null){
+						return 0;
+					}
+						
+					else if(isNaN(a)){
+						a = a.length;
+					}
+					
+					c = prompt("The function is in the form y=a*(cos(k*(x+h)))+c"+"\n"+"Enter the value of c");
+					
+					if(c == null){
+						return 0;
+					}
+						
+					else if(isNaN(c)){
+						c = c.length;
+					}
+					
+					k = prompt("The function is in the form y=a*(cos(k*(x+h)))+c"+"\n"+"Enter the value of k");
+					
+					if(k == null){
+						return 0;
+					}
+						
+					else if(isNaN(k)){
+						k = k.length;
+					}
+					
+					h = prompt("The function is in the form y=a*(cos(k*(x+h)))+c"+"\n"+"Enter the value of h");
+					
+					if(h == null){
+						return 0;
+					}
+						
+					else if(isNaN(h)){
+						h = h.length;
+					}
+					
+					string = a+"*(cos("+k+"*(x+"+h+")))+"+c;
+					
+					functionsTable.innerHTML+='<tr id=\''+id.toString()+'\' >\
+											   <td>'+"derivative cos"+'</td>\
+											   <td>'+string+'</td>\
+											   <td><input type="button" id="delete" value="Delete" onclick="deleteFunction(\''+id.toString()+'\')"></td>\
+											   </tr>';
+											   
+					graphFunction({type:"derivative cos",a:a,c:c,k:k,h:h,color:colorPicker.value.toString()});
+		
+					functions.push({type:"derivative cos",a:a,c:c,k:k,h:h,color:colorPicker.value.toString(),id:id,deleted:false});
+				
+				}
+				
+				else if(selectBox.value == "derivative tan"){
+					
+					a = prompt("The function is in the form y=a*(tan(k*(x+h)))+c"+"\n"+"Enter the value of a");
+					
+					if(a == null){
+						return 0;
+					}
+						
+					else if(isNaN(a)){
+						a = a.length;
+					}
+					
+					c = prompt("The function is in the form y=a*(tan(k*(x+h)))+c"+"\n"+"Enter the value of c");
+					
+					if(c == null){
+						return 0;
+					}
+						
+					else if(isNaN(c)){
+						c = c.length;
+					}
+					
+					k = prompt("The function is in the form y=a*(tan(k*(x+h)))+c"+"\n"+"Enter the value of k");
+					
+					if(k == null){
+						return 0;
+					}
+						
+					else if(isNaN(k)){
+						k = k.length;
+					}
+					
+					h = prompt("The function is in the form y=a*(tan(k*(x+h)))+c"+"\n"+"Enter the value of h");
+					
+					if(h == null){
+						return 0;
+					}
+						
+					else if(isNaN(h)){
+						h = h.length;
+					}
+					
+					string = a+"*(tan("+k+"*(x+"+h+")))+"+c;
+					
+					functionsTable.innerHTML+='<tr id=\''+id.toString()+'\' >\
+											   <td>'+"derivative tan"+'</td>\
+											   <td>'+string+'</td>\
+											   <td><input type="button" id="delete" value="Delete" onclick="deleteFunction(\''+id.toString()+'\')"></td>\
+											   </tr>';
+											   
+					graphFunction({type:"derivative tan",a:a,c:c,k:k,h:h,color:colorPicker.value.toString()});
+		
+					functions.push({type:"derivative tan",a:a,c:c,k:k,h:h,color:colorPicker.value.toString(),id:id,deleted:false});
+				
+				}
+				
+				else if(selectBox.value == "derivative arcsin"){
+					
+					a = prompt("The function is in the form y=a*(arcsin(k*(x+h)))+c"+"\n"+"Enter the value of a");
+					
+					if(a == null){
+						return 0;
+					}
+						
+					else if(isNaN(a)){
+						a = a.length;
+					}
+					
+					c = prompt("The function is in the form y=a*(arcsin(k*(x+h)))+c"+"\n"+"Enter the value of c");
+					
+					if(c == null){
+						return 0;
+					}
+						
+					else if(isNaN(c)){
+						c = c.length;
+					}
+					
+					k = prompt("The function is in the form y=a*(arcsin(k*(x+h)))+c"+"\n"+"Enter the value of k");
+					
+					if(k == null){
+						return 0;
+					}
+						
+					else if(isNaN(k)){
+						k = k.length;
+					}
+					
+					h = prompt("The function is in the form y=a*(arcsin(k*(x+h)))+c"+"\n"+"Enter the value of h");
+					
+					if(h == null){
+						return 0;
+					}
+						
+					else if(isNaN(h)){
+						h = h.length;
+					}
+					
+					string = a+"*(arcsin("+k+"*(x+"+h+")))+"+c;
+					
+					functionsTable.innerHTML+='<tr id=\''+id.toString()+'\' >\
+											   <td>'+"derivative arcsin"+'</td>\
+											   <td>'+string+'</td>\
+											   <td><input type="button" id="delete" value="Delete" onclick="deleteFunction(\''+id.toString()+'\')"></td>\
+											   </tr>';
+											   
+					graphFunction({type:"derivative arcsin",a:a,c:c,k:k,h:h,color:colorPicker.value.toString()});
+		
+					functions.push({type:"derivative arcsin",a:a,c:c,k:k,h:h,color:colorPicker.value.toString(),id:id,deleted:false});
+				
+				}
+				
+				else if(selectBox.value == "derivative arccos"){
+					
+					a = Number(prompt("The function is in the form y=a*(b)**(k*(x+h))+c"+"\n"+"Enter the value of a"));
+					
+					if(a == null){
+						return 0;
+					}
+						
+					else if(isNaN(a)){
+						a = a.length;
+					}
+					
+					c = Number(prompt("The function is in the form y=a*(b)**(k*(x+h))+c"+"\n"+"Enter the value of c"));
+					
+					if(c == null){
+						return 0;
+					}
+						
+					else if(isNaN(c)){
+						c = c.length;
+					}
+					
+					k = Number(prompt("The function is in the form y=a*(b)**(k*(x+h))+c"+"\n"+"Enter the value of k"));
+					
+					if(k == null){
+						return 0;
+					}
+						
+					else if(isNaN(k)){
+						k = k.length;
+					}
+					
+					h = Number(prompt("The function is in the form y=a*(b)**(k*(x+h))+c"+"\n"+"Enter the value of h"));
+					
+					if(h == null){
+						return 0;
+					}
+						
+					else if(isNaN(h)){
+						h = h.length;
+					}
+					
+					string = a+"*(arccos("+k+"*(x+"+h+")))+"+c;
+					
+					functionsTable.innerHTML+='<tr id=\''+id.toString()+'\' >\
+											   <td>'+"derivative arccos"+'</td>\
+											   <td>'+string+'</td>\
+											   <td><input type="button" id="delete" value="Delete" onclick="deleteFunction(\''+id.toString()+'\')"></td>\
+											   </tr>';
+											   
+					graphFunction({type:"derivative arccos",a:a,c:c,k:k,h:h,color:colorPicker.value.toString()});
+		
+					functions.push({type:"derivative arccos",a:a,c:c,k:k,h:h,color:colorPicker.value.toString(),id:id,deleted:false});
+				
+				}
+				
+				else if(selectBox.value == "derivative arctan"){
+					
+					a = Number(prompt("The function is in the form y=a*(b)**(k*(x+h))+c"+"\n"+"Enter the value of a"));
+					
+					if(a == null){
+						return 0;
+					}
+						
+					else if(isNaN(a)){
+						a = a.length;
+					}
+					
+					c = Number(prompt("The function is in the form y=a*(b)**(k*(x+h))+c"+"\n"+"Enter the value of c"));
+					
+					if(c == null){
+						return 0;
+					}
+						
+					else if(isNaN(c)){
+						c = c.length;
+					}
+					
+					k = Number(prompt("The function is in the form y=a*(b)**(k*(x+h))+c"+"\n"+"Enter the value of k"));
+					
+					if(k == null){
+						return 0;
+					}
+						
+					else if(isNaN(k)){
+						k = k.length;
+					}
+					
+					h = Number(prompt("The function is in the form y=a*(b)**(k*(x+h))+c"+"\n"+"Enter the value of h"));
+					
+					if(h == null){
+						return 0;
+					}
+						
+					else if(isNaN(h)){
+						h = h.length;
+					}
+					
+					string = a+"*(arctan("+k+"*(x+"+h+")))+"+c;
+					
+					functionsTable.innerHTML+='<tr id=\''+id.toString()+'\' >\
+											   <td>'+"derivative arctan"+'</td>\
+											   <td>'+string+'</td>\
+											   <td><input type="button" id="delete" value="Delete" onclick="deleteFunction(\''+id.toString()+'\')"></td>\
+											   </tr>';
+											   
+					graphFunction({type:"derivative arctan",a:a,c:c,k:k,h:h,color:colorPicker.value.toString()});
+		
+					functions.push({type:"derivative arctan",a:a,c:c,k:k,h:h,color:colorPicker.value.toString(),id:id,deleted:false});
+				
+				}
+				
+				else if(selectBox.value == "derivative square root"){
+					
+					a = prompt("The function is in the form y=a*(sqrt(k*(x+h)))+c"+"\n"+"Enter the value of a");
+					
+					if(a == null){
+						return 0;
+					}
+						
+					else if(isNaN(a)){
+						a = a.length;
+					}
+					
+					c = prompt("The function is in the form y=a*(sqrt(k*(x+h)))+c"+"\n"+"Enter the value of c");
+					
+					if(c == null){
+						return 0;
+					}
+						
+					else if(isNaN(c)){
+						c = c.length;
+					}
+					
+					k = prompt("The function is in the form y=a*(sqrt(k*(x+h)))+c"+"\n"+"Enter the value of k");
+					
+					if(k == null){
+						return 0;
+					}
+						
+					else if(isNaN(k)){
+						k = k.length;
+					}
+					
+					h = prompt("The function is in the form y=a*(sqrt(k*(x+h)))+c"+"\n"+"Enter the value of h");
+					
+					if(h == null){
+						return 0;
+					}
+						
+					else if(isNaN(h)){
+						h = h.length;
+					}
+					
+					string = a+"*(sqrt("+k+"*(x+"+h+")))+"+c;
+					
+					functionsTable.innerHTML+='<tr id=\''+id.toString()+'\' >\
+											   <td>'+"derivative square root"+'</td>\
+											   <td>'+string+'</td>\
+											   <td><input type="button" id="delete" value="Delete" onclick="deleteFunction(\''+id.toString()+'\')"></td>\
+											   </tr>';
+											   
+					graphFunction({type:"derivative square root",a:a,c:c,k:k,h:h,color:colorPicker.value.toString()});
+		
+					functions.push({type:"derivative square root",a:a,c:c,k:k,h:h,color:colorPicker.value.toString(),id:id,deleted:false});
+				
+				}
+				
+				else if(selectBox.value == "integral polynomial"){
+					
+					lowerBound = prompt("What is your lower bound?");
+					
+					if(lowerBound == null){
+						return 0;
+					}
+					
+					else if(isNaN(lowerBound)){
+						lowerBound = lowerBound.length;
+					}
+					
+					degree = prompt("What is the degree of your polynomial?");
+					
+					if(isNaN(degree)){
+						degree = degree.length;
+					}
+					
+					else if(!isNaN(degree)){
+						degree = parseInt(Math.abs(degree));
+					}
+					
+					
+					for (i= degree; i>=0; i--){
+						coeffecient = prompt("What is the "+ i +" th coeffecient");
+						
+						if(coeffecient == null){
+							return 0;
+						}
+					
+						else if(isNaN(coeffecient)){
+							coeffecient = coeffecient.length;
+						}
+					
+						coeffecients.push(coeffecient);
+					}
+					
+					for (exponent= degree; exponent>=0; exponent--){
+						exponents.push(exponent);
+					}
+					
+					for (i=0; i<=degree;i++){
+						anticoeffecients.push((coeffecients[i]/(exponents[i]+1)));
+						antiexponents.push(exponents[i]+1);
+					}
+					
+					string="";
+					
+					for(i=0;i<=exponents.length-1;i++){
+						
+						if(exponents[i] == 0 && coeffecients[i] == 0){
+							string+="";
+						}
+						
+						else if(exponents[i] == 1){
+						
+							if(coeffecients[i] > 0){
+								string+="+"+coeffecients[i]+"x";
+							}
+							else if(coeffecients[i] < 0){
+								string+="-"+coeffecients[i]+"x";
+							}
+						}
+						
+						else if(coeffecients[i] == 1 && exponents[i] !=0){
+							string+="+x^"+exponents[i];
+						}
+						
+						else if(coeffecients[i] == -1 && exponents[i] !=0){
+							string+="-x^"+exponents[i];
+						}
+						
+						else if(coeffecients[i] == 1 && exponents[i] ==0){
+							string+="+1";
+						}
+						
+						else if(coeffecients[i] == -1 && exponents[i] ==0){
+							string+="-1";
+						}
+						
+						else if(exponents[i] == 0 && coeffecients[i] != 0){
+
+							if(coeffecients[i]>0){
+								string+="+"+coeffecients[i];
+							}
+							
+							else if(coeffecients[i]<0){
+								string+="-"+Math.abs(coeffecients[i]);
+							}
+						}
+						
+						else if(exponents[i] != 0 && coeffecients[i] == 0){
+							string+="";
+						}
+						
+						
+						else {
+							if(coeffecients[i] >0){
+								string+="+"+coeffecients[i]+"x^"+exponents[i];
+							}
+							
+							else if(coeffecients[i]<0){
+								string+="-"+Math.abs(coeffecients[i])+"x^"+exponents[i];
+							}
+						}
+					}
+					
+					functionsTable.innerHTML+='<tr id=\''+id.toString()+'\' >\
+											   <td>'+"integral polynomial"+'</td>\
+											   <td>'+string+'</td>\
+											   <td><input type="button" id="delete" value="Delete" onclick="deleteFunction(\''+id.toString()+'\')"></td>\
+											   </tr>';
+					
+					graphFunction({type:"integral polynomial",lowerBound:lowerBound,anticoeffecients:anticoeffecients,degree:degree,antiexponents:antiexponents,color:colorPicker.value.toString()});
+		
+					functions.push({type:"integral polynomial",lowerBound:lowerBound,anticoeffecients:anticoeffecients,degree:degree,antiexponents:antiexponents,color:colorPicker.value.toString(),id:id,deleted:false});
+					
+					
+				}
+				
+				else if(selectBox.value == "integral rational"){
+					
+					lowerBound = prompt("What is your lower bound?");
+					
+					if(lowerBound == null){
+						return 0;
+					}
+					
+					else if(isNaN(lowerBound)){
+						lowerBound = lowerBound.length;
+					}
+						
+					degree1 = prompt("What is the degree of the first polynomial?");
+
+					if (degree1 == null){
+						return 0;
+					}
+					
+					else if(isNaN(degree1)){
+						degree1 = degree1.length;
+					}
+					
+					else if(!isNaN(degree1)){
+						degree1 = parseInt(Math.abs(degree1));
+					}
+					
+					degree2 = prompt("What is the degree of the second polynomial?");
+					
+					if (degree2 == null){
+						return 0;
+					}
+					
+					else if(isNaN(degree2)){
+						degree2 = degree2.length;
+					}
+					
+					else if(!isNaN(degree2)){
+						degree2 = parseInt(Math.abs(degree2));
+					}
+					
+					for (i= degree1; i>=0; i--){
+						coeffecient = prompt("What is the "+ i +" th coeffecient of your first polynomial?");
+						
+						if(coeffecient == null){
+							return 0;
+						}
+					
+						else if(isNaN(coeffecient)){
+							coeffecient = coeffecient.length;
+						}
+					
+						coeffecients1.push(coeffecient);
+					}
+			
+					for (i= degree2; i>=0; i--){
+						coeffecient = prompt("What is the "+ i +" th coeffecient of your second polynomial?");
+						
+						if(coeffecient == null){
+							return 0;
+						}
+					
+						else if(isNaN(coeffecient)){
+							coeffecient = coeffecient.length;
+						}
+						
+						coeffecients2.push(coeffecient);
+					}
+	
+		
+					for (exponent= degree1; exponent>=0; exponent--){
+						exponents1.push(exponent);
+					}
+			
+					for (exponent= degree2; exponent>=0; exponent--){
+						exponents2.push(exponent);
+					}
+					
+					
+					string="(";
+
+					for(i=0;i<=exponents1.length-1;i++){
+						
+						if(exponents1[i] == 0 && coeffecients1[i] == 0){
+							string+="";
+						}
+						
+						else if(exponents1[i] == 1){
+						
+							if(coeffecients1[i] > 0){
+								string+="+"+coeffecients1[i]+"x";
+							}
+							else if(coeffecients1[i] < 0){
+								string+="-"+coeffecients1[i]+"x";
+							}
+						}
+						
+						else if(coeffecients1[i] == 1 && exponents1[i] !=0){
+							string+="+x^"+exponents1[i];
+						}
+						
+						else if(coeffecients1[i] == -1 && exponents1[i] !=0){
+							string+="-x^"+exponents1[i];
+						}
+						
+						else if(coeffecients1[i] == 1 && exponents1[i] ==0){
+							string+="+1";
+						}
+						
+						else if(coeffecients1[i] == -1 && exponents1[i] ==0){
+							string+="-1";
+						}
+						
+						else if(exponents1[i] == 0 && coeffecients1[i] != 0){
+
+							if(coeffecients1[i]>0){
+								string+="+"+coeffecients1[i];
+							}
+							
+							else if(coeffecients1[i]<0){
+								string+="-"+Math.abs(coeffecients1[i]);
+							}
+						}
+						
+						else if(exponents1[i] != 0 && coeffecients1[i] == 0){
+							string+="";
+						}
+						
+						
+						else {
+							if(coeffecients1[i] >0){
+								string+="+"+coeffecients1[i]+"x^"+exponents1[i];
+							}
+							
+							else if(coeffecients1[i]<0){
+								string+="-"+Math.abs(coeffecients1[i])+"x^"+exponents1[i];
+							}
+						}
+					}
+					
+					string=string.slice(1,string.length);
+					
+					string+=")/(";
+					
+					for(i=0;i<=exponents2.length-1;i++){
+						
+						if(exponents2[i] == 0 && coeffecients2[i] == 0){
+							string+="";
+						}
+						
+						else if(exponents2[i] == 1){
+						
+							if(coeffecients2[i] > 0){
+								string+="+"+coeffecients2[i]+"x";
+							}
+							else if(coeffecients2[i] < 0){
+								string+="-"+coeffecients2[i]
+							}
+						}
+						
+						else if(coeffecients2[i] == 1 && exponents2[i] !=0){
+							string+="+x^"+exponents2[i];
+						}
+						
+						else if(coeffecients2[i] == -1 && exponents2[i] !=0){
+							string+="-x^"+exponents2[i];
+						}
+						
+						else if(coeffecients2[i] == 1 && exponents2[i] ==0){
+							string+="+1";
+						}
+						
+						else if(coeffecients2[i] == -1 && exponents2[i] ==0){
+							string+="-1";
+						}
+						
+						else if(exponents2[i] == 0 && coeffecients2[i] != 0){
+
+							if(coeffecients2[i]>0){
+								string+="+"+coeffecients2[i];
+							}
+							
+							else if(coeffecients2[i]<0){
+								string+="-"+Math.abs(coeffecients2[i]);
+							}
+						}
+						
+						else if(exponents2[i] != 0 && coeffecients2[i] == 0){
+							string+="";
+						}
+						
+						
+						else {
+							if(coeffecients2[i] >0){
+								string+="+"+coeffecients2[i]+"x^"+exponents2[i];
+							}
+							
+							else if(coeffecients2[i]<0){
+								string+="-"+Math.abs(coeffecients2[i])+"x^"+exponents2[i];
+							}
+						}
+					}
+					
+					string+=")";
+				
+					functionsTable.innerHTML+='<tr id=\''+id.toString()+'\' >\
+											   <td>'+"integral rational"+'</td>\
+											   <td>'+string+'</td>\
+											   <td><input type="button" id="delete" value="Delete" onclick="deleteFunction(\''+id.toString()+'\')"></td>\
+											   </tr>';
+					
+					graphFunction({type:"integral rational",lowerBound:lowerBound,degree1:degree1,degree2:degree2,coeffecients1:coeffecients1,coeffecients2:coeffecients2,exponents1:exponents1,exponents2:exponents2,color:colorPicker.value.toString()});
+		
+					functions.push({type:"integral rational",lowerBound:lowerBound,degree1:degree1,degree2:degree2,coeffecients1:coeffecients1,coeffecients2:coeffecients2,exponents1:exponents1,exponents2:exponents2,color:colorPicker.value.toString(),id:id,deleted:false});
+			
+				}
+				
+				else if(selectBox.value == "integral sin"){
+					
+					lowerBound = prompt("What is your lower bound?");
+					
+					if(lowerBound == null){
+						return 0;
+					}
+					
+					else if(isNaN(lowerBound)){
+						lowerBound = lowerBound.length;
+					}
+					
+					a = prompt("The function is in the form y=a*(sin(k*(x+h)))+c"+"\n"+"Enter the value of a");
+					
+					if(a == null){
+						return 0;
+					}
+						
+					else if(isNaN(a)){
+						a = a.length;
+					}
+					
+					c = prompt("The function is in the form y=a*(sin(k*(x+h)))+c"+"\n"+"Enter the value of c");
+					
+					if(c == null){
+						return 0;
+					}
+						
+					else if(isNaN(c)){
+						c = c.length;
+					}
+					
+					k = prompt("The function is in the form y=a*(sin(k*(x+h)))+c"+"\n"+"Enter the value of k");
+					
+					if(k == null){
+						return 0;
+					}
+						
+					else if(isNaN(k)){
+						k = k.length;
+					}
+					
+					h = prompt("The function is in the form y=a*(sin(k*(x+h)))+c"+"\n"+"Enter the value of h");
+					
+					if(h == null){
+						return 0;
+					}
+						
+					else if(isNaN(h)){
+						h = h.length;
+					}
+					
+					string = a+"*(sin("+k+"*(x+"+h+")))+"+c;
+					
+					functionsTable.innerHTML+='<tr id=\''+id.toString()+'\' >\
+											   <td>'+"integral sin"+'</td>\
+											   <td>'+string+'</td>\
+											   <td><input type="button" id="delete" value="Delete" onclick="deleteFunction(\''+id.toString()+'\')"></td>\
+											   </tr>';
+											   
+					graphFunction({type:"integral sin",lowerBound:lowerBound,a:a,c:c,k:k,h:h,color:colorPicker.value.toString()});
+		
+					functions.push({type:"integral sin",lowerBound:lowerBound,a:a,c:c,k:k,h:h,color:colorPicker.value.toString(),id:id,deleted:false});
+				
+				}
+				
+				else if(selectBox.value == "integral cos"){
+					
+					lowerBound = prompt("What is your lower bound?");
+					
+					if(lowerBound == null){
+						return 0;
+					}
+					
+					else if(isNaN(lowerBound)){
+						lowerBound = lowerBound.length;
+					}
+					
+					a = prompt("The function is in the form y=a*(cos(k*(x+h)))+c"+"\n"+"Enter the value of a");
+					
+					if(a == null){
+						return 0;
+					}
+						
+					else if(isNaN(a)){
+						a = a.length;
+					}
+					
+					c = prompt("The function is in the form y=a*(cos(k*(x+h)))+c"+"\n"+"Enter the value of c");
+					
+					if(c == null){
+						return 0;
+					}
+						
+					else if(isNaN(c)){
+						c = c.length;
+					}
+					
+					k = prompt("The function is in the form y=a*(cos(k*(x+h)))+c"+"\n"+"Enter the value of k");
+					
+					if(k == null){
+						return 0;
+					}
+						
+					else if(isNaN(k)){
+						k = k.length;
+					}
+					
+					h = prompt("The function is in the form y=a*(cos(k*(x+h)))+c"+"\n"+"Enter the value of h");
+					
+					if(h == null){
+						return 0;
+					}
+						
+					else if(isNaN(h)){
+						h = h.length;
+					}
+
+					string = a+"*(cos("+k+"*(x+"+h+")))+"+c;
+					
+					functionsTable.innerHTML+='<tr id=\''+id.toString()+'\' >\
+											   <td>'+"integral cos"+'</td>\
+											   <td>'+string+'</td>\
+											   <td><input type="button" id="delete" value="Delete" onclick="deleteFunction(\''+id.toString()+'\')"></td>\
+											   </tr>';
+											   
+					graphFunction({type:"integral cos",lowerBound:lowerBound,a:a,c:c,k:k,h:h,color:colorPicker.value.toString()});
+		
+					functions.push({type:"integral cos",lowerBound:lowerBound,a:a,c:c,k:k,h:h,color:colorPicker.value.toString(),id:id,deleted:false});
+				
+				}
+				
+				else if(selectBox.value == "integral tan"){
+					
+					lowerBound = prompt("What is your lower bound?");
+					
+					if(lowerBound == null){
+						return 0;
+					}
+					
+					else if(isNaN(lowerBound)){
+						lowerBound = lowerBound.length;
+					}
+					
+					a = prompt("The function is in the form y=a*(tan(k*(x+h)))+c"+"\n"+"Enter the value of a");
+					
+					if(a == null){
+						return 0;
+					}
+						
+					else if(isNaN(a)){
+						a = a.length;
+					}
+					
+					c = prompt("The function is in the form y=a*(tan(k*(x+h)))+c"+"\n"+"Enter the value of c");
+					
+					if(c == null){
+						return 0;
+					}
+						
+					else if(isNaN(c)){
+						c = c.length;
+					}
+					
+					k = prompt("The function is in the form y=a*(tan(k*(x+h)))+c"+"\n"+"Enter the value of k");
+					
+					if(k == null){
+						return 0;
+					}
+						
+					else if(isNaN(k)){
+						k = k.length;
+					}
+					
+					h = prompt("The function is in the form y=a*(tan(k*(x+h)))+c"+"\n"+"Enter the value of h");
+					
+					if(h == null){
+						return 0;
+					}
+						
+					else if(isNaN(h)){
+						h = h.length;
+					}
+					
+					string = a+"*(tan("+k+"*(x+"+h+")))+"+c;
+					
+					functionsTable.innerHTML+='<tr id=\''+id.toString()+'\' >\
+											   <td>'+"integral tan"+'</td>\
+											   <td>'+string+'</td>\
+											   <td><input type="button" id="delete" value="Delete" onclick="deleteFunction(\''+id.toString()+'\')"></td>\
+											   </tr>';
+											   
+					graphFunction({type:"integral tan",lowerBound:lowerBound,a:a,c:c,k:k,h:h,color:colorPicker.value.toString()});
+		
+					functions.push({type:"integral tan",lowerBound:lowerBound,a:a,c:c,k:k,h:h,color:colorPicker.value.toString(),id:id,deleted:false});
+				
+				}
+				
+				else if(selectBox.value == "integral arcsin"){
+					
+					lowerBound = prompt("What is your lower bound?");
+					
+					if(lowerBound == null){
+						return 0;
+					}
+					
+					else if(isNaN(lowerBound)){
+						lowerBound = lowerBound.length;
+					}
+					
+					a = prompt("The function is in the form y=a*(arcsin(k*(x+h)))+c"+"\n"+"Enter the value of a");
+					
+					if(a == null){
+						return 0;
+					}
+						
+					else if(isNaN(a)){
+						a = a.length;
+					}
+					
+					c = prompt("The function is in the form y=a*(arcsin(k*(x+h)))+c"+"\n"+"Enter the value of c");
+					
+					if(c == null){
+						return 0;
+					}
+						
+					else if(isNaN(c)){
+						c = c.length;
+					}
+					
+					k = prompt("The function is in the form y=a*(arcsin(k*(x+h)))+c"+"\n"+"Enter the value of k");
+					
+					if(k == null){
+						return 0;
+					}
+						
+					else if(isNaN(k)){
+						k = k.length;
+					}
+					
+					h = prompt("The function is in the form y=a*(arcsin(k*(x+h)))+c"+"\n"+"Enter the value of h");
+					
+					if(h == null){
+						return 0;
+					}
+						
+					else if(isNaN(h)){
+						h = h.length;
+					}
+					
+					string = a+"*(arcsin("+k+"*(x+"+h+")))+"+c;
+					
+					functionsTable.innerHTML+='<tr id=\''+id.toString()+'\' >\
+											   <td>'+"integral arcsin"+'</td>\
+											   <td>'+string+'</td>\
+											   <td><input type="button" id="delete" value="Delete" onclick="deleteFunction(\''+id.toString()+'\')"></td>\
+											   </tr>';
+											   
+					graphFunction({type:"integral arcsin",lowerBound:lowerBound,a:a,c:c,k:k,h:h,color:colorPicker.value.toString()});
+		
+					functions.push({type:"integral arcsin",lowerBound:lowerBound,a:a,c:c,k:k,h:h,color:colorPicker.value.toString(),id:id,deeted:false});
+				
+				}
+				
+				else if(selectBox.value == "integral arccos"){
+					
+					lowerBound = prompt("What is your lower bound?");
+					
+					if(lowerBound == null){
+						return 0;
+					}
+					
+					else if(isNaN(lowerBound)){
+						lowerBound = lowerBound.length;
+					}
+					
+					a = prompt("The function is in the form y=a*(arccos(k*(x+h)))+c"+"\n"+"Enter the value of a");
+					
+					if(a == null){
+						return 0;
+					}
+						
+					else if(isNaN(a)){
+						a = a.length;
+					}
+					
+					c = prompt("The function is in the form y=a*(arccos(k*(x+h)))+c"+"\n"+"Enter the value of c");
+					
+					if(c == null){
+						return 0;
+					}
+						
+					else if(isNaN(c)){
+						c = c.length;
+					}
+					
+					k = prompt("The function is in the form y=a*(arccos(k*(x+h)))+c"+"\n"+"Enter the value of k");
+					
+					if(k == null){
+						return 0;
+					}
+						
+					else if(isNaN(k)){
+						k = k.length;
+					}
+					
+					h = prompt("The function is in the form y=a*(arccos(k*(x+h)))+c"+"\n"+"Enter the value of h");
+					
+					if(h == null){
+						return 0;
+					}
+						
+					else if(isNaN(h)){
+						h = h.length;
+					}
+					
+					string = a+"*(arccos("+k+"*(x+"+h+")))+"+c;
+					
+					functionsTable.innerHTML+='<tr id=\''+id.toString()+'\' >\
+											   <td>'+"integral arccos"+'</td>\
+											   <td>'+string+'</td>\
+											   <td><input type="button" id="delete" value="Delete" onclick="deleteFunction(\''+id.toString()+'\')"></td>\
+											   </tr>';
+											   
+					graphFunction({type:"integral arccos",lowerBound:lowerBound,a:a,c:c,k:k,h:h,color:colorPicker.value.toString()});
+		
+					functions.push({type:"integral arccos",lowerBound:lowerBound,a:a,c:c,k:k,h:h,color:colorPicker.value.toString(),id:id,deleted:false});
+				
+				}
+				
+				else if(selectBox.value == "integral arctan"){
+					
+					lowerBound = prompt("What is your lower bound?");
+					
+					if(lowerBound == null){
+						return 0;
+					}
+					
+					else if(isNaN(lowerBound)){
+						lowerBound = lowerBound.length;
+					}
+					
+					a = prompt("The function is in the form y=a*(arctan(k*(x+h)))+c"+"\n"+"Enter the value of a");
+					
+					if(a == null){
+						return 0;
+					}
+						
+					else if(isNaN(a)){
+						a = a.length;
+					}
+					
+					c = prompt("The function is in the form y=a*(arctan(k*(x+h)))+c"+"\n"+"Enter the value of c");
+					
+					if(c == null){
+						return 0;
+					}
+						
+					else if(isNaN(c)){
+						c = c.length;
+					}
+					
+					k = prompt("The function is in the form y=a*(arctan(k*(x+h)))+c"+"\n"+"Enter the value of k");
+					
+					if(k == null){
+						return 0;
+					}
+						
+					else if(isNaN(k)){
+						k = k.length;
+					}
+					
+					h = prompt("The function is in the form y=a*(arctan(k*(x+h)))+c"+"\n"+"Enter the value of h");
+					
+					if(h == null){
+						return 0;
+					}
+						
+					else if(isNaN(h)){
+						h = h.length;
+					}
+					
+					string = a+"*(arctan("+k+"*(x+"+h+")))+"+c;
+					
+					functionsTable.innerHTML+='<tr id=\''+id.toString()+'\' >\
+											   <td>'+"integral arctan"+'</td>\
+											   <td>'+string+'</td>\
+											   <td><input type="button" id="delete" value="Delete" onclick="deleteFunction(\''+id.toString()+'\')"></td>\
+											   </tr>';
+											   
+					graphFunction({type:"integral arctan",lowerBound:lowerBound,a:a,c:c,k:k,h:h,color:colorPicker.value.toString()});
+		
+					functions.push({type:"integral arctan",lowerBound:lowerBound,a:a,c:c,k:k,h:h,color:colorPicker.value.toString(),id:id,deleted:false});
+				
+				}
+				
+				else if(selectBox.value == "integral square root"){
+					
+					lowerBound = prompt("What is your lower bound?");
+					
+					if(lowerBound == null){
+						return 0;
+					}
+					
+					else if(isNaN(lowerBound)){
+						lowerBound = lowerBound.length;
+					}
+					
+					a = prompt("The function is in the form y=a*(sqrt(k*(x+h)))+c"+"\n"+"Enter the value of a");
+					
+					if(a == null){
+						return 0;
+					}
+						
+					else if(isNaN(a)){
+						a = a.length;
+					}
+					
+					c = prompt("The function is in the form y=a*(sqrt(k*(x+h)))+c"+"\n"+"Enter the value of c");
+					
+					if(c == null){
+						return 0;
+					}
+						
+					else if(isNaN(c)){
+						c = c.length;
+					}
+					
+					k = prompt("The function is in the form y=a*(sqrt(k*(x+h)))+c"+"\n"+"Enter the value of k");
+					
+					if(k == null){
+						return 0;
+					}
+						
+					else if(isNaN(k)){
+						k = k.length;
+					}
+					
+					h = prompt("The function is in the form y=a*(sqrt(k*(x+h)))+c"+"\n"+"Enter the value of h");
+					
+					if(h == null){
+						return 0;
+					}
+						
+					else if(isNaN(h)){
+						h = h.length;
+					}
+					
+					string = a+"*(sqrt("+k+"*(x+"+h+")))+"+c;
+					
+					functionsTable.innerHTML+='<tr id=\''+id.toString()+'\' >\
+											   <td>'+"integral square root"+'</td>\
+											   <td>'+string+'</td>\
+											   <td><input type="button" id="delete" value="Delete" onclick="deleteFunction(\''+id.toString()+'\')"></td>\
+											   </tr>';
+											   
+					graphFunction({type:"integral square root",lowerBound:lowerBound,a:a,c:c,k:k,h:h,color:colorPicker.value.toString()});
+		
+					functions.push({type:"integral square root",lowerBound:lowerBound,a:a,c:c,k:k,h:h,color:colorPicker.value.toString(),id:id,deleted:false});
+				
+				}
+				
+				else if(selectBox.value == "integral log"){
+					
+					lowerBound = prompt("What is your lower bound?");
+					
+					if(lowerBound == null){
+						return 0;
+					}
+					
+					else if(isNaN(lowerBound)){
+						lowerBound = lowerBound.length;
+					}
+					
+					a = prompt("The function is in the form y=a*(log(k*(x+h)))+c"+"\n"+"Enter the value of a");
+					
+					if(a == null){
+						return 0;
+					}
+						
+					else if(isNaN(a)){
+						a = a.length;
+					}
+					
+					c = prompt("The function is in the form y=a*(log(k*(x+h)))+c"+"\n"+"Enter the value of c");
+					
+					if(c == null){
+						return 0;
+					}
+						
+					else if(isNaN(c)){
+						c = c.length;
+					}
+					
+					k = prompt("The function is in the form y=a*(log(k*(x+h)))+c"+"\n"+"Enter the value of k");
+					
+					if(k == null){
+						return 0;
+					}
+						
+					else if(isNaN(k)){
+						k = k.length;
+					}
+					
+					h = prompt("The function is in the form y=a*(log(k*(x+h)))+c"+"\n"+"Enter the value of h");
+					
+					if(h == null){
+						return 0;
+					}
+						
+					else if(isNaN(h)){
+						h = h.length;
+					}
+					
+					string = a+"*(log("+k+"*(x+"+h+")))+"+c;
+					
+					functionsTable.innerHTML+='<tr id=\''+id.toString()+'\' >\
+											   <td>'+"integral log"+'</td>\
+											   <td>'+string+'</td>\
+											   <td><input type="button" id="delete" value="Delete" onclick="deleteFunction(\''+id.toString()+'\')"></td>\
+											   </tr>';
+											   
+					graphFunction({type:"integral log",lowerBound:lowerBound,a:a,c:c,k:k,h:h,color:colorPicker.value.toString()});
+		
+					functions.push({type:"integral log",lowerBound:lowerBound,a:a,c:c,k:k,h:h,color:colorPicker.value.toString(),id:id,deleted:false});
+				
+				}
+				
+				else if(selectBox.value == "integral exponential"){
+					
+					lowerBound = prompt("What is your lower bound?");
+					
+					if(lowerBound == null){
+						return 0;
+					}
+					
+					else if(isNaN(lowerBound)){
+						lowerBound = lowerBound.length;
+					}
+					
+					a = Number(prompt("The function is in the form y=a*(b)**(k*(x+h))+c"+"\n"+"Enter the value of a"));
+					
+					if(a == null){
+						return 0;
+					}
+						
+					else if(isNaN(a)){
+						a = a.length;
+					}
+					
+					b = Number(prompt("The function is in the form y=a*(b)**(k*(x+h))+c"+"\n"+"Enter the value of b"));
+					
+					if(b == null){
+						return 0;
+					}
+						
+					else if(isNaN(b)){
+						b = b.length;
+					}
+					
+					c = Number(prompt("The function is in the form y=a*(b)**(k*(x+h))+c"+"\n"+"Enter the value of c"));
+					
+					if(c == null){
+						return 0;
+					}
+						
+					else if(isNaN(c)){
+						c = c.length;
+					}
+					
+					k = Number(prompt("The function is in the form y=a*(b)**(k*(x+h))+c"+"\n"+"Enter the value of k"));
+					
+					if(k == null){
+						return 0;
+					}
+						
+					else if(isNaN(k)){
+						k = k.length;
+					}
+					
+					h = Number(prompt("The function is in the form y=a*(b)**(k*(x+h))+c"+"\n"+"Enter the value of h"));
+					
+					if(h == null){
+						return 0;
+					}
+						
+					else if(isNaN(h)){
+						h = h.length;
+					}
+					
+					
+					string = a+"*("+b+")**("+k+"*(x+"+h+"))+"+c;
+					
+					functionsTable.innerHTML+='<tr id=\''+id.toString()+'\' >\
+											   <td>'+"integral exponential"+'</td>\
+											   <td>'+string+'</td>\
+											   <td><input type="button" id="delete" value="Delete" onclick="deleteFunction(\''+id.toString()+'\')"></td>\
+											   </tr>';
+											   
+					graphFunction({type:"integral exponential",lowerBound:lowerBound,a:a,b:b,c:c,k:k,h:h,color:colorPicker.value.toString()});
+		
+					functions.push({type:"integral exponential",lowerBound:lowerBound,a:a,b:b,c:c,k:k,h:h,color:colorPicker.value.toString(),id:id,deleted:false});
+				
+				
+				}
+				
+				
+				id++;
+			
+			}
+			
+			function graphFunction(data){
+				
+				context.lineWidth=3;
+				context.beginPath();
+				context.strokeStyle=data.color;
+					
+				
+				// graph polynomial functions 
+				if(data.type == "polynomial"){
+					
+					// draw first point 
+					x=-300/scaleFactor+startX;
+					y=0;
+					for (j=0; j<=data.degree;j++){
+					
+						y+=data.coeffecients[j]*x**data.exponents[j];
+					}
+					
+					context.moveTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					
+					// draw subsequent points 
+					for(x=-300/scaleFactor+startX;x<=300/scaleFactor+startX;x+=1/scaleFactor){
+					
+						y=0;
+						for (j=0; j<=data.degree;j++){
+							y+=data.coeffecients[j]*x**data.exponents[j];
+						}
+						
+
+						context.lineTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					
+					}
+				}
+				
+				// graph rational functions 
+				else if(data.type == "rational"){
+					
+					
+					// draw first point 
+					x=-300/scaleFactor+startX;
+					polynomial1=0;
+					for (j=0; j<=data.degree1;j++){
+						polynomial1+=data.coeffecients1[j]*x**data.exponents1[j];
+					}
+					polynomial2=0;
+					for (j=0; j<=data.degree2;j++){
+						polynomial2+=data.coeffecients2[j]*x**data.exponents2[j];
+					}
+						
+						
+					y=polynomial1/polynomial2;
+					
+					context.moveTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					
+					// draw subsequent points 
+					for(x=-300/scaleFactor+startX;x<=300/scaleFactor+startX;x+=1/scaleFactor){
+						
+						
+						polynomial1=0
+						for (j=0; j<=data.degree1;j++){
+							polynomial1+=data.coeffecients1[j]*x**data.exponents1[j];
+						}
+						polynomial2=0;
+						for (j=0; j<=data.degree2;j++){
+							polynomial2+=data.coeffecients2[j]*x**data.exponents2[j];
+							}
+						
+						
+						y=polynomial1/polynomial2;
+						
+						context.lineTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					}
+					
+				
+					
+				}
+				
+				// graph exponential functions 
+				else if(data.type == "exponential"){
+				
+					x=-300/scaleFactor+startX;
+					y= (data.a*(data.b)**(data.k*(x+data.h)))+data.c;
+					context.moveTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					
+					for(x=-300/scaleFactor+startX;x<=300/scaleFactor+startX;x+=1/scaleFactor){
+					
+						
+
+						y= (data.a*(data.b)**(data.k*(x+data.h)))+data.c;
+					
+						context.lineTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					}
+					
+					
+				}
+				
+				// graph log functions 
+				else if(data.type == "log"){
+				
+					
+					
+					
+					
+					// draw first point
+					x=-300/scaleFactor+startX;
+					y = data.a*(Math.log(data.k*(x+data.h)))+data.c;
+					
+
+					
+					context.moveTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					
+					// draw subsequent points 
+					for(x=-300/scaleFactor+startX;x<=300/scaleFactor+startX;x+=1/scaleFactor){
+					
+						y = data.a*(Math.log(data.k*(x+data.h)))+data.c;
+						
+
+						context.lineTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					}
+					
+				
+					
+				}
+				
+				// graph sin functions 
+				else if(data.type == "sin"){
+				
+
+					// draw first point
+					x=-300/scaleFactor+startX;
+					y = data.a*(Math.sin(data.k*(x+data.h)))+data.c;
+					
+					
+					context.moveTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					
+					// draw subsequent points 
+					for(x=-300/scaleFactor+startX;x<=300/scaleFactor+startX;x+=1/scaleFactor){
+					
+						y = data.a*(Math.sin(data.k*(x+data.h)))+data.c;
+						
+		
+						context.lineTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					}
+					
+		
+					
+				}
+				
+				// graph cos functions 
+				else if(data.type == "cos"){
+				
+
+					// draw first point
+					x=-300/scaleFactor+startX;
+					y = data.a*(Math.cos(data.k*(x+data.h)))+data.c;
+					
+					
+					context.moveTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					
+					// draw subsequent points 
+					for(x=-300/scaleFactor+startX;x<=300/scaleFactor+startX;x+=1/scaleFactor){
+					
+						y = data.a*(Math.cos(data.k*(x+data.h)))+data.c;
+						
+		
+						context.lineTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					}
+					
+		
+					
+				}
+				
+				// graph tan functions 
+				else if(data.type == "tan"){
+				
+	
+					
+					// draw first point
+					x=-300/scaleFactor+startX;
+					y = data.a*(Math.tan(data.k*(x+data.h)))+data.c;
+	;
+					context.moveTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					
+					// draw subsequent points 
+					for(x=-300/scaleFactor+startX;x<=300/scaleFactor+startX;x+=1/scaleFactor){
+					
+						
+
+						y = data.a*(Math.tan(data.k*(x+data.h)))+data.c;
+						
+						
+						context.lineTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+						
+					}
+					
+			
+					
+				}
+				
+				// graph csc functions 
+				else if(data.type == "csc"){
+				
+	
+					
+					// draw first point
+					x=-300/scaleFactor+startX;
+					y = data.a*(1/Math.sin(data.k*(x+data.h)))+data.c;
+
+					context.moveTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					
+					// draw subsequent points 
+					for(x=-300/scaleFactor+startX;x<=300/scaleFactor+startX;x+=1/scaleFactor){
+					
+						y = data.a*(1/Math.sin(data.k*(x+data.h)))+data.c;
+						
+						
+						context.lineTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+						
+					}
+					
+			
+					
+		
+				}
+				
+				// graph sec functions 
+				else if(data.type == "sec"){
+				
+
+				
+					
+					// draw first point
+					x=-300/scaleFactor+startX;
+					y = data.a*(1/Math.cos(data.k*(x+data.h)))+data.c;
+		
+					context.moveTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					
+					// draw subsequent points 
+					for(x=-300/scaleFactor+startX;x<=300/scaleFactor+startX;x+=1/scaleFactor){
+					
+						y = data.a*(1/Math.cos(data.k*(x+data.h)))+data.c;
+						
+						
+						context.lineTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+						
+					}
+					
+
+				}
+				
+				// graph cot functions 
+				else if(data.type == "cot"){
+				
+
+					
+
+					
+					// draw first point
+					x=-300/scaleFactor+startX;
+					y = data.a*(1/Math.tan(data.k*(x+data.h)))+data.c;
+				
+					context.moveTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					
+					// draw subsequent points 
+					for(x=-300/scaleFactor+startX;x<=300/scaleFactor+startX;x+=1/scaleFactor){
+					
+						y = data.a*(1/Math.tan(data.k*(x+data.h)))+data.c;
+
+						context.lineTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					}
+					
+			
+					
+
+				}
+				
+				// graph arcsin functions 
+				else if(data.type == "arcsin"){
+				
+
+					// draw first point
+					context.moveTo(scaleFactor*(-1-startX)+300,-1*scaleFactor*(-1*Math.PI/2-startY)+300);
+					
+					// draw subsequent points 
+					for(x=-1;x<=1;x+=1/scaleFactor){
+					
+						y = data.a*(Math.asin(data.k*(x+data.h)))+data.c;
+
+						context.lineTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					}
+					
+			
+					
+				}
+				
+				// graph arccos functions 
+				else if(data.type == "arccos"){
+				
+
+					// draw first point
+					context.moveTo(scaleFactor*(-1-startX)+300,-1*scaleFactor*(Math.PI-startY)+300);
+					
+					// draw subsequent points 
+					for(x=-1;x<=1;x+=1/scaleFactor){
+					
+						y = data.a*(Math.acos(data.k*(x+data.h)))+data.c;
+
+						context.lineTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					}
+					
+			
+					
+				}
+				
+				// graph arctan functions 
+				else if(data.type == "arctan"){
+				
+
+					// draw first point
+					x=-300/scaleFactor+startX;
+					y = data.a*(Math.atan(data.k*(x+data.h)))+data.c;
+					context.moveTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					
+					// draw subsequent points 
+					for(x=-300/scaleFactor+startX;x<=300/scaleFactor+startX;x+=1/scaleFactor){
+					
+						y = data.a*(Math.atan(data.k*(x+data.h)))+data.c;
+
+						context.lineTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					}
+					
+			
+					
+				}
+				
+				
+				
+				// graph absolute value functions
+				else if(data.type == "absolute value"){
+				
+		
+					
+					
+					// draw first point
+					x=-300/scaleFactor+startX;
+					y = data.a*(Math.abs(data.k*(x+data.h)))+data.c;
+				
+					context.moveTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					
+					// draw subsequent points 
+					for(x=-300/scaleFactor+startX;x<=300/scaleFactor+startX;x+=1/scaleFactor){
+					
+						y = data.a*(Math.abs(data.k*(x+data.h)))+data.c;	
+						
+						context.lineTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					}
+					
+
+					
+				}
+				
+				
+				
+			
+				// graph square root functions
+				else if(data.type == "square root"){
+				
+			
+					
+					
+					// draw first point
+					x=-300/scaleFactor+startX;
+					y = data.a*(Math.sqrt(data.k*(x+data.h)))+data.c;
+				
+					context.moveTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					
+					// draw subsequent points 
+					for(x=-300/scaleFactor+startX;x<=300/scaleFactor+startX;x+=1/scaleFactor){
+					
+						y = data.a*(Math.sqrt(data.k*(x+data.h)))+data.c;	
+
+						context.lineTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					}
+					
+				
+					
+				}
+				
+				// graph ellipses 
+				else if(data.type == "ellipse"){
+				
+					// draw first point
+					angle=0;
+					x=data.a*Math.cos(angle)*data.r+data.s;
+					y=data.b*Math.sin(angle)*data.r+data.t;
+			
+					context.moveTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					
+					// draw subsequent points 
+					for(angle=0;angle<=2*Math.PI;angle+=2*Math.PI/1000){
+					
+						x=data.a*Math.cos(angle)*data.r+data.s;
+						y=data.b*Math.sin(angle)*data.r+data.t;
+						
+						context.lineTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					}
+					
+					
+				}
+				
+				else if(data.type == "derivative polynomial"){
+					
+
+					
+				
+					// draw first point
+					x=-300/scaleFactor+startX;
+					y=0;
+					for (j=0; j<=data.degree;j++){
+						
+						
+						
+						y+=data.diffcoeffecients[j]*x**data.diffexponents[j];
+					}
+					
+		
+					context.moveTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					
+					// draw subsequent points 
+					for(x=-300/scaleFactor+startX;x<=300/scaleFactor+startX;x+=1/scaleFactor){
+						
+						y=0;
+						for (j=0; j<=data.degree;j++){
+							
+							
+						
+							y+=data.diffcoeffecients[j]*x**data.diffexponents[j];
+						}
+						
+						context.lineTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					}
+					
+
+				
+		
+				}
+				
+				else if(data.type == "derivative rational"){
+					
+				
+
+		// draw first point
+		x=-300/scaleFactor+startX;
+		y=0;
+		
+			num1=x-0.00001;
+			num2=x+0.00001;
+		
+			polynomial1=0,polynomial2=0;
+	
+			for (j=0; j<=data.degree1;j++){
+				
+				
+							
+				polynomial1+=data.diffcoeffecients1[j]*num1**data.diffexponents1[j];
+				polynomial2+=data.diffcoeffecients1[j]*num2**data.diffexponents1[j];
+
+				}
+		
+			polynomial3=0,polynomial4=0;
+			for (j=0; j<=data.degree2;j++){
+				
+				
+				
+				polynomial3+=data.diffcoeffecients2[j]*num1**data.diffexponents2[j];
+				polynomial4+=data.diffcoeffecients2[j]*num2**data.diffexponents2[j];
+				}
+			
+			rational1= polynomial1/polynomial3;
+			rational2 = polynomial2/polynomial4;
+			y = (rational2-rational1)/(num2-num1);
+			
+	
+			context.moveTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					
+		// draw subsequent points 
+		for(x=-300/scaleFactor+startX;x<=300/scaleFactor+startX;x+=1/scaleFactor){
+					
+			num1=x-0.00001;
+			num2=x+0.00001;
+			
+			polynomial1=0,polynomial2=0;
+		
+			for (j=0; j<=data.degree1;j++){
+				
+				
+				
+				polynomial1+=data.diffcoeffecients1[j]*num1**data.diffexponents1[j];
+				polynomial2+=data.diffcoeffecients1[j]*num2**data.diffexponents1[j];
+
+				}
+		
+			polynomial3=0,polynomial4=0;
+			for (j=0; j<=data.degree2;j++){
+				
+				
+				
+				polynomial3+=data.diffcoeffecients2[j]*num1**data.diffexponents2[j];
+				polynomial4+=data.diffcoeffecients2[j]*num2**data.diffexponents2[j];
+				}
+			
+			rational1= polynomial1/polynomial3;
+			rational2 = polynomial2/polynomial4;
+			y = (rational2-rational1)/(num2-num1);
+			
+			context.lineTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+			
+		
+		}
+		
+
+	
+				}
+				
+				else if(data.type == "derivative exponential"){
+					
+					x=-300/scaleFactor+startX;
+					y= data.a*data.k*(data.b)**(data.k*(x+data.h))*Math.log(data.b);
+					context.moveTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+		
+					
+					for(x=-300/scaleFactor+startX;x<=300/scaleFactor+startX;x+=1/scaleFactor){
+					
+						y= data.a*data.k*(data.b)**(data.k*(x+data.h))*Math.log(data.b);
+						
+						context.lineTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					}
+					
+					
+				}
+				
+				
+				
+				else if(data.type == "derivative log"){
+					
+				
+					
+					
+					// draw first point 
+					x=-300/scaleFactor+startX;
+					y = data.a*data.k*(1/(data.k*(x+data.h)));
+				
+					context.moveTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+			
+					// draw subsequent points 
+					for(x=-300/scaleFactor+startX;x<=300/scaleFactor+startX;x+=1/scaleFactor){
+		
+						y = data.a*data.k*(1/(data.k*(x+data.h)));
+						
+						context.lineTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					}
+					
+				
+					
+				}
+				
+				else if(data.type == "derivative sin"){
+					
+				
+					
+					
+					// draw first point 
+					x=-300/scaleFactor+startX;
+					
+					y = data.a*data.k*(Math.cos(data.k*(x+data.h)));
+					context.moveTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+			
+					// draw subsequent points 
+					for(x=-300/scaleFactor+startX;x<=300/scaleFactor+startX;x+=1/scaleFactor){
+		
+						y = data.a*data.k*(Math.cos(data.k*(x+data.h)));
+						
+						context.lineTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					}
+					
+				
+				}
+				
+				else if(data.type == "derivative cos"){
+					
+					
+
+					// draw first point 
+					x=-300/scaleFactor+startX;
+					y = -1*data.a*data.k*(Math.sin(data.k*(x+data.h)));
+			
+					context.moveTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+			
+					// draw subsequent points 
+					for(x=-300/scaleFactor+startX;x<=300/scaleFactor+startX;x+=1/scaleFactor){
+		
+						y = -1*data.a*data.k*(Math.sin(data.k*(x+data.h)));
+						
+						context.lineTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					}
+					
+				
+					
+				}
+				
+				else if(data.type == "derivative tan"){
+					
+					
+
+					
+					
+					// draw first point 
+					x=-300/scaleFactor+startX;
+					y = data.a*data.k*((1/Math.cos(data.k*(x+data.h)))**2);
+				
+					context.moveTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+			
+					// draw subsequent points 
+					for(x=-300/scaleFactor+startX;x<=300/scaleFactor+startX;x+=1/scaleFactor){
+		
+						y = data.a*data.k*((1/Math.cos(data.k*(x+data.h)))**2);
+						
+						context.lineTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					}
+					
+	
+				}
+				
+				// graph arcsin functions 
+				else if(data.type == "derivative arcsin"){
+				
+
+					// draw first point
+					context.moveTo(scaleFactor*(-0.999999999-startX)+300,-1*scaleFactor*(1000000-startY)+300);
+					
+					// draw subsequent points 
+					for(x=-0.999999999;x<1;x+=1/scaleFactor){
+					
+						y = (data.a*data.k)/Math.sqrt(1-data.k**2*(x+data.h)**2);
+
+						context.lineTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					}
+					
+					context.lineTo(scaleFactor*(0.999999999-startX)+300,-1*scaleFactor*(1000000-startY)+300);
+					
+			
+					
+				}
+				
+				// graph arccos functions 
+				else if(data.type == "derivative arccos"){
+				
+
+					// draw first point
+					context.moveTo(scaleFactor*(-0.999999999-startX)+300,-1*scaleFactor*(-1000000-startY)+300);
+					
+					// draw subsequent points 
+					for(x=-0.999999999;x<1;x+=1/scaleFactor){
+					
+						y = -1*(data.a*data.k)/Math.sqrt(1-data.k**2*(x+data.h)**2);
+
+						context.lineTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					}
+					
+					context.lineTo(scaleFactor*(0.999999999-startX)+300,-1*scaleFactor*(-1000000-startY)+300);
+					
+				}
+				
+				// graph arctan functions 
+				else if(data.type == "derivative arctan"){
+				
+
+					// draw first point
+					x=-300/scaleFactor+startX;
+					y = (data.a*data.k)/(data.k**2*(x+data.h)**2 +1);
+					context.moveTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					
+					// draw subsequent points 
+					for(x=-300/scaleFactor+startX;x<=300/scaleFactor+startX;x+=1/scaleFactor){
+					
+						y = (data.a*data.k)/(data.k**2*(x+data.h)**2 +1);
+
+						context.lineTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					}
+					
+					
+			
+					
+				}
+				
+				else if(data.type == "derivative square root"){
+				
+				
+
+					
+					// draw first point 
+					x=-300/scaleFactor+startX;
+					y = data.a*data.k*(1/(2*Math.sqrt(data.k*(x+data.h))));
+				
+					context.moveTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+			
+					// draw subsequent points 
+					for(x=-300/scaleFactor+startX;x<=300/scaleFactor+startX;x+=1/scaleFactor){
+		
+						y = data.a*data.k*(1/(2*Math.sqrt(data.k*(x+data.h))));
+						
+						context.lineTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					}
+					
+				
+				}
+				
+				else if (data.type == "integral polynomial"){
+					
+
+					// draw first point
+					x=-300/scaleFactor+startX;
+					
+					upper_integral=0;
+					lower_integral=0;
+					
+					for (j=0; j<=data.degree;j++){
+							lower_integral+=data.anticoeffecients[j]*data.lowerBound**data.antiexponents[j];
+							upper_integral+=data.anticoeffecients[j]*x**data.antiexponents[j];
+							}
+					
+					y = upper_integral-lower_integral;
+					
+				
+			
+					context.moveTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					
+					// draw subsequent points 
+					for(x=-300/scaleFactor+startX;x<=300/scaleFactor+startX;x+=1/scaleFactor){
+					
+						upper_integral=0;
+					
+						for (j=0; j<=data.degree;j++){
+							
+							upper_integral+=data.anticoeffecients[j]*x**data.antiexponents[j];
+							}
+			
+						y = upper_integral - lower_integral;
+						
+					
+						context.lineTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					}
+					
+					
+		
+				}
+				
+				else if(data.type == "integral rational"){
+					
+			
+					// draw first point
+					y=0;
+					
+					if(data.lowerBound <= -300/scaleFactor+startX){
+					
+						for(x=data.lowerBound;x<=-300/scaleFactor+startX;x+=1/scaleFactor){
+		
+	
+							polynomial1=0;
+							for (j=0; j<=data.degree1;j++){
+								polynomial1+=data.coeffecients1[j]*x**data.exponents1[j];
+			
+							}
+			
+							polynomial2=0;
+							for (j=0; j<=data.degree2;j++){
+								polynomial2+=data.coeffecients2[j]*x**data.exponents2[j];
+			
+							}
+			
+							rational=polynomial1/polynomial2;
+							y+=1/scaleFactor*rational;
+			
+						}
+						
+							
+					}
+						
+						
+					else if(data.lowerBound > -300/scaleFactor+startX){
+					
+						for(x=data.lowerBound;x>=-300/scaleFactor+startX;x-=1/scaleFactor){
+		
+	
+							polynomial1=0;
+							for (j=0; j<=data.degree1;j++){
+								polynomial1+=data.coeffecients1[j]*x**data.exponents1[j];
+			
+							}
+			
+							polynomial2=0;
+							for (j=0; j<=data.degree2;j++){
+								polynomial2+=data.coeffecients2[j]*x**data.exponents2[j];
+			
+							}
+			
+							rational=polynomial1/polynomial2;
+							y+=1/scaleFactor*rational;
+			
+						}
+						
+						y=-1*y;
+							
+					}
+						
+					context.moveTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					
+					
+					
+					for(x=-300/scaleFactor+startX;x<=300/scaleFactor+startX;x+=1/scaleFactor){
+						
+						y=0;
+						
+						if(x >= data.lowerBound){
+						
+							for(point=data.lowerBound;point<=x;point+=1/scaleFactor){
+		
+						
+								polynomial1=0;
+								for (j=0; j<=data.degree1;j++){
+									polynomial1+=data.coeffecients1[j]*point**data.exponents1[j];
+			
+								}
+			
+								polynomial2=0;
+								for (j=0; j<=data.degree2;j++){
+									polynomial2+=data.coeffecients2[j]*point**data.exponents2[j];
+			
+								}
+			
+								rational=polynomial1/polynomial2;
+								y+=1/scaleFactor*rational;
+							
+							}
+						}
+						
+						else if(x < data.lowerBound){
+						
+							for(point=data.lowerBound;point>=x;point-=1/scaleFactor){
+		
+						
+								polynomial1=0;
+								for (j=0; j<=data.degree1;j++){
+									polynomial1+=data.coeffecients1[j]*point**data.exponents1[j];
+			
+								}
+			
+								polynomial2=0;
+								for (j=0; j<=data.degree2;j++){
+									polynomial2+=data.coeffecients2[j]*point**data.exponents2[j];
+			
+								}
+			
+								rational=polynomial1/polynomial2;
+								y+=1/scaleFactor*rational;
+							
+							}
+							
+							y=-1*y;
+						}
+						
+						context.lineTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+						
+					}
+						
+				}
+				
+				
+				else if(data.type == "integral sin"){
+		
+				
+					
+					
+					// draw first point 
+					x=-300/scaleFactor+startX;
+					upper_integral = -1*data.a*(Math.cos(data.k*(x+data.h)))/data.k+data.c*x;
+					lower_integral = -1*data.a*(Math.cos(data.k*(data.lowerBound+data.h)))/data.k+data.c*data.lowerBound;
+					y = upper_integral - lower_integral;
+					
+				
+						
+			
+					context.moveTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					
+					// draw subsequent points 
+					for(x=-300/scaleFactor+startX;x<=300/scaleFactor+startX;x+=1/scaleFactor){
+		
+						upper_integral = -1*data.a*(Math.cos(data.k*(x+data.h)))/data.k+data.c*x;
+						y = upper_integral - lower_integral;
+						
+						
+						context.lineTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					}
+					
+					
+				}
+				
+				else if(data.type == "integral cos"){
+		
+					// draw first point 
+					x=-300/scaleFactor+startX;
+					upper_integral = data.a*(Math.sin(data.k*(x+data.h)))/data.k+data.c*x;
+					lower_integral = data.a*(Math.sin(data.k*(data.lowerBound+data.h)))/data.k+data.c*data.lowerBound;
+					y = upper_integral - lower_integral;
+					
+					
+					
+					context.moveTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					
+					// draw subsequent points 
+					for(x=-300/scaleFactor+startX;x<=300/scaleFactor+startX;x+=1/scaleFactor){
+		
+						upper_integral = data.a*(Math.sin(data.k*(x+data.h)))/data.k+data.c*x;
+						y = upper_integral - lower_integral;
+						
+						
+						context.lineTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					}
+					
+
+				}
+				
+				else if(data.type == "integral tan"){
+		
+
+					
+
+					
+					// draw first point 
+					x=-300/scaleFactor+startX;
+					upper_integral = data.a*(1/Math.cos(data.k*(x+data.h))**2)/data.k+data.c*x;
+					lower_integral = data.a*(1/Math.cos(data.k*(data.lowerBound+data.h))**2)/data.k+data.c*data.lowerBound;
+					y = upper_integral - lower_integral;
+					
+					
+					
+					context.moveTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					
+					// draw subsequent points 
+					for(x=-300/scaleFactor+startX;x<=300/scaleFactor+startX;x+=1/scaleFactor){
+		
+						upper_integral = data.a*(1/Math.cos(data.k*(x+data.h))**2)/data.k+data.c*x;
+						y = upper_integral - lower_integral;
+						
+					
+						context.lineTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					}
+					
+					
+				}
+				
+				// graph arcsin functions 
+				else if(data.type == "integral arcsin"){
+				
+
+					// draw first point
+					x=-1;
+					upper_integral=data.a*(x+data.h)*Math.asin(data.k*(x+data.h))+ (data.a*Math.sqrt(1-data.k**2*(x+data.h)**2)/data.k)/data.k+data.c*x;
+					lower_integral=data.a*(data.lowerBound+data.h)*Math.asin(data.k*(data.lowerBound+data.h))+ (data.a*Math.sqrt(1-data.k**2*(data.lowerBound+data.h)**2)/data.k)+data.c*data.lowerBound;
+					
+					y=upper_integral - lower_integral;
+					
+					context.moveTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					
+					// draw subsequent points 
+					for(x=-1;x<=1;x+=1/scaleFactor){
+					
+						upper_integral=data.a*(x+data.h)*Math.asin(data.k*(x+data.h))+ (data.a*Math.sqrt(1-data.k**2*(x+data.h)**2)/data.k)/data.k+data.c*x;
+						
+						y = upper_integral - lower_integral;
+						
+						context.lineTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					}
+					
+					
+			
+					
+				}
+				
+				// graph arccos functions 
+				else if(data.type == "integral arccos"){
+				
+
+					// draw first point
+					x=-1;
+					upper_integral=data.a*(x+data.h)*Math.acos(data.k*(x+data.h))- (data.a*Math.sqrt(1-data.k**2*(x+data.h)**2)/data.k)/data.k+data.c*x;
+					lower_integral=data.a*(data.lowerBound+data.h)*Math.acos(data.k*(data.lowerBound+data.h))- (data.a*Math.sqrt(1-data.k**2*(data.lowerBound+data.h)**2)/data.k)+data.c*data.lowerBound;
+					
+					y=upper_integral - lower_integral;
+					
+					context.moveTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					
+					// draw subsequent points 
+					for(x=-1;x<=1;x+=1/scaleFactor){
+					
+						upper_integral=data.a*(x+data.h)*Math.acos(data.k*(x+data.h))- (data.a*Math.sqrt(1-data.k**2*(x+data.h)**2)/data.k)/data.k+data.c*x;
+						
+						y = upper_integral - lower_integral;
+						
+						context.lineTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					}
+					
+					
+			
+					
+				}
+				
+				// graph arctan functions 
+				else if(data.type == "integral arctan"){
+				
+
+					// draw first point
+					x=-300/scaleFactor+startX;
+					upper_integral=(-1*data.a*Math.log(data.k**2*(x+data.h)**2+1))/(2*data.k)+data.a*(x+data.h)*Math.atan(data.k*(x+data.h))+data.c*x;
+					lower_integral=(-1*data.a*Math.log(data.k**2*(data.lowerBound+data.h)**2+1))/(2*data.k)+data.a*(data.lowerBound+data.h)*Math.atan(data.k*(data.lowerBound+data.h))+data.c*data.lowerBound;
+					
+					y=upper_integral - lower_integral;
+					
+					context.moveTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					
+					// draw subsequent points 
+					for(x=-300/scaleFactor+startX;x<=300/scaleFactor+startX;x+=1/scaleFactor){
+					
+						upper_integral=(-1*data.a*Math.log(data.k**2*(x+data.h)**2+1))/(2*data.k)+data.a*(x+data.h)*Math.atan(data.k*(x+data.h))+data.c*x;
+						
+						y = upper_integral - lower_integral;
+						
+						context.lineTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					}
+					
+				
+			
+					
+				}
+				
+				else if(data.type == "integral square root"){
+		
+
+									
+					// draw first point 
+					x=-300/scaleFactor+startX;
+					upper_integral = 2*data.a*x**(3/2)/(3*data.k)+data.c*x;
+					lower_integral = 2*data.a*data.lowerBound**(3/2)/(3*data.k)+data.c*data.lowerBound;
+					y = upper_integral - lower_integral;
+					
+					
+					
+					context.moveTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					
+					// draw subsequent points 
+					for(x=-300/scaleFactor+startX;x<=300/scaleFactor+startX;x+=1/scaleFactor){
+		
+						upper_integral = 2*data.a*x**(3/2)/(3*data.k)+data.c*x;
+						y = upper_integral - lower_integral;
+						
+					
+						context.lineTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					}
+
+					
+				}
+				
+				
+				
+				else if(data.type == "integral log"){
+					
+
+					// draw first point 
+					x=-300/scaleFactor+startX;
+					upper_integral=data.a*(x+data.h)*Math.log(data.k*(x+data.h))+(data.c-data.a)*x;
+					lower_integral=data.a*(data.lowerBound+data.h)*Math.log(data.k*(data.lowerBound+data.h))+(data.c-data.a)*data.lowerBound;
+					y = upper_integral - lower_integral;
+					
+					
+					
+					context.moveTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					
+					// draw subsequent points 
+					for(x=-300/scaleFactor+startX;x<=300/scaleFactor+startX;x+=1/scaleFactor){
+						upper_integral=data.a*(x+data.h)*Math.log(data.k*(x+data.h))+(data.c-data.a)*x;
+						y = upper_integral - lower_integral;
+						
+						
+						context.lineTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+						
+					}
+					
+				
+			
+				}
+				
+				else if (data.type == "integral exponential"){
+					
+				
+				
+
+					
+					// draw first point 
+					x=-300/scaleFactor+startX;
+					upper_integral=(data.a*(data.b)**(data.k*(x+data.h)))/(Math.log(data.b)*k)+data.c*x;
+					lower_integral=(data.a*(data.b)**(data.k*(data.lowerBound+data.h)))/(Math.log(data.b)*k)+data.c*data.lowerBound;
+					y = upper_integral - lower_integral;
+					
+					
+					context.moveTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					
+		
+					// draw subsequent points 
+					for(x=-300/scaleFactor+startX;x<=300/scaleFactor+startX;x+=1/scaleFactor){
+						
+						
+					
+						upper_integral=(data.a*(data.b)**(data.k*(x+data.h)))/(Math.log(data.b)*k)+data.c*x;
+						y = upper_integral - lower_integral;
+						
+					
+						context.lineTo(scaleFactor*(x-startX)+300,-1*scaleFactor*(y-startY)+300);
+					
+					}
+					
+				
+					
+		
+				}
+				
+				context.stroke();
+				
+			}
+		</script>
+	</body>
+</html>	
+	
